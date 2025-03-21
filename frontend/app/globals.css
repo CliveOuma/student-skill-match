@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure smooth transition between themes */
+* {
+    @apply transition-colors duration-300;
+}
+
+/* Default Light Mode */
+html {
+    @apply bg-white text-gray-900;
+}
+
+/* Dark Mode */
+html.dark {
+    @apply bg-gray-900 text-gray-100;
+}
