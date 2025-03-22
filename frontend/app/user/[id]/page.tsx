@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/app/context/UserContext";
+import { LoaderCircle } from "lucide-react";
 
 type Profile = {
   _id: string;
@@ -17,18 +18,17 @@ type Profile = {
   bio: string;
 };
 
-export default function UserProfilePage() {
-  const { id } = useParams() as { id: string }; 
+export default function MyProfilePage() {
   const router = useRouter();
-  const { user } = useUser(); // Get logged-in user from context
+  const { user } = useUser(); // Get logged-in user
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!id) return;
+      if (!user?.id) return;
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/profiles/${id}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/profiles/${user.id}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         if (!response.ok) throw new Error("Profile not found");
@@ -42,24 +42,21 @@ export default function UserProfilePage() {
     };
 
     fetchProfile();
-  }, [id]);
+  }, [user?.id]);
 
   const handleDelete = async () => {
-    if (!user?.id || user.id !== profile?._id) {
-      alert("You are not authorized to delete this profile.");
-      return;
-    }
+    if (!user?.id) return;
+    if (!confirm("Are you sure you want to delete your profile?")) return;
 
-    if (confirm("Are you sure you want to delete this profile?")) {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/profiles/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      router.push("/dashboard"); 
-    }
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/profiles/${user.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+
+    router.push("/dashboard"); // Redirect after deletion
   };
 
-  if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  if (loading) return <div className="flex justify-center items-center h-screen"><LoaderCircle/></div>;
   if (!profile) return <div className="flex justify-center items-center h-screen">Profile not found</div>;
 
   return (
@@ -82,17 +79,15 @@ export default function UserProfilePage() {
               </a>
             </p>
           )}
-          {/* Show Edit & Delete buttons only if the logged-in user owns this profile */}
-          {user && user.id === profile._id && (
-            <div className="flex justify-between mt-4">
-              <Button onClick={() => router.push(`/user/edit`)} className="bg-blue-500 hover:bg-blue-600">
-                Edit
-              </Button>
-              <Button onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
-                Delete
-              </Button>
-            </div>
-          )}
+          {/* Edit & Delete buttons */}
+          <div className="flex justify-between mt-4">
+            <Button onClick={() => router.push("/my-profile/edit")} className="bg-blue-500 hover:bg-blue-600">
+              Edit
+            </Button>
+            <Button onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
+              Delete
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

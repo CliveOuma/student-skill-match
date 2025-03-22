@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { useUser } from "@/app/context/UserContext";
 
 const signInSchema = z.object({
   email: z.string().email("Email must be valid"),
@@ -24,8 +23,7 @@ const signInSchema = z.object({
 });
 
 const Page = () => {
-  const router = useRouter();
-  const { login } = useUser(); 
+  const router = useRouter(); 
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -50,8 +48,7 @@ const Page = () => {
         toast.error(data.message || "Wrong email or password!");
         return;
       }
-  
-      login(data.user, data.token); 
+
       toast.success("Logged in successfully!");
       router.push("/dashboard");
     } catch (error) {

@@ -93,7 +93,17 @@ export default function Dashboard() {
                 <p className={`text-sm ${currentTheme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
                   {profile.role}
                 </p>
-                <p className="text-sm">{`Skills: ${profile.skills.join(", ")}`}</p>
+                <p className="text-sm flex flex-wrap gap-2">
+                  {profile.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className=" py-1 px-2 bg-gray-600 text-white rounded-md text-xs"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </p>
+
                 <p className={`text-xs mt-1 ${currentTheme === "dark" ? "text-gray-500" : "text-gray-700"}`}>
                   Joined: {formatDate(profile.createdAt)}
                 </p>

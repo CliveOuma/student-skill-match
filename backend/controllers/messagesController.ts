@@ -19,42 +19,46 @@ interface GetMessagesRequest extends Request {
 }
 
 // Add a new message
-export const addMessage = async (req: AddMessageRequest, res: Response, next: NextFunction): Promise<void> => {
+export const addMessage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { from, to, message } = req.body;
 
-    //Create message in the database
+    if (!from || !to || !message) {
+      res.status(400).json({ msg: "Missing required fields" });
+      return;
+    }
+
     const newMessage = await Message.create({
       message: { text: message },
       users: [from, to],
       sender: from,
     });
 
-    if (newMessage) {
-      res.status(201).json({ msg: "Message added successfully" });
-    } else {
-      res.status(400).json({ msg: "Failed to add message to the database" });
-    }
+    res.status(201).json({ msg: "Message added successfully" });
   } catch (error) {
     next(error);
   }
 };
 
 // Retrieve all messages between two users
-export const getAllMessages = async (req: GetMessagesRequest, res: Response): Promise<void> => {
+export const getAllMessages = async (req: Request, res: Response): Promise<void> => {
   try {
     const { from, to } = req.body;
 
-    //Use the correct model name
-    const messages = await Message.find({ users: { $all: [from, to] } }).sort({ updatedAt: 1 });
+    if (!from || !to) {
+      res.status(400).json({ message: "User IDs are required" });
+      return;
+    }
+
+    const messages = await Message.find({ users: { $all: [from, to] } }).sort({ createdAt: 1 });
 
     if (!messages || messages.length === 0) {
-      res.status(404).json({ message: "No messages found." });
+      res.status(200).json([]); // Return empty array instead of 404
       return;
     }
 
     const formattedMessages = messages.map((msg) => ({
-      fromSelf: msg.sender.toString() === from,
+      fromSelf: msg.sender === from,
       message: msg.message.text,
       timestamp: msg.createdAt,
     }));

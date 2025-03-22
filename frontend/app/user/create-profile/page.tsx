@@ -18,6 +18,7 @@ export default function CreateProfile() {
     username: "",
     role: "",
     skills: "",
+    phone: "",
     portfolio: "",
     location: "",
     bio: "",
@@ -47,12 +48,13 @@ export default function CreateProfile() {
       username: profile.username.trim(),
       role: profile.role.trim(),
       skills: profile.skills.split(",").map((skill) => skill.trim()),
+      phone: profile.phone, 
       portfolio: profile.portfolio.trim(),
       location: profile.location.trim(),
       bio: profile.bio.trim(),
     };
 
-    console.log("🔍 Sending Profile Creation Request:", payload); 
+    
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/profiles`, {
         method: "POST",
@@ -64,7 +66,7 @@ export default function CreateProfile() {
       });
 
       const data = await response.json();
-      console.log("🔍 Server Response:", data); 
+      
 
       if (!response.ok) {
         toast.error(data.message || "Failed to create profile!");
@@ -111,13 +113,27 @@ export default function CreateProfile() {
               onChange={handleChange}
               required
               className="w-full"
-              placeholder="Frontend, Backend, Data Analyst, AI Developer"
+              placeholder="Frontend, Backend, Fullstack, Data Analyst, AI Developer,"
             />
           </div>
 
           <div>
             <Label htmlFor="skills">Skills (comma-separated) *</Label>
             <Input id="skills" type="text" name="skills" value={profile.skills} onChange={handleChange} required className="w-full" />
+          </div>
+          <div>
+            <Label htmlFor="Phone Number">Phone Number *</Label>
+            <Input
+              id="phone"
+              type="tel"
+              name="phone"
+              value={profile.phone}
+              onChange={handleChange}
+              required
+              className="w-full"
+              pattern="^\+?[0-9]{7,15}$"
+            />
+
           </div>
 
           <div>
@@ -129,7 +145,6 @@ export default function CreateProfile() {
               value={profile.portfolio}
               onChange={handleChange}
               className="w-full"
-              placeholder="Your portfolio/github URL"
             />
           </div>
 
@@ -142,7 +157,6 @@ export default function CreateProfile() {
               value={profile.location}
               onChange={handleChange}
               className="w-full"
-              placeholder="Where are you from?"
             />
           </div>
 

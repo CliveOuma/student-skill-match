@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import LoadingCircle from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";
+import { useUser } from "@/app/context/UserContext";
 
 type Profile = {
   _id: string;
@@ -15,13 +16,15 @@ type Profile = {
   portfolio: string;
   location: string;
   bio: string;
-  whatsapp: string; 
+  whatsapp: string;
+  phone: string;
 };
 
 export default function ProfilePage() {
   const { id } = useParams();
   const [profile, setProfile] = useState<Profile | null>(null);
   const router = useRouter();
+  const { user } = useUser(); // Get logged-in user
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -39,11 +42,38 @@ export default function ProfilePage() {
   }, [id]);
 
   if (!profile) return <div className="flex justify-center items-center h-screen"><LoadingCircle /></div>;
+
   const openWhatsApp = () => {
-    if (profile?.whatsapp) {
-      window.open(`https://wa.me/${profile.whatsapp}`, "_blank");
+    if (profile?.phone) {
+      const phoneNumber = String(profile.phone).replace(/\D/g, "");
+      if (phoneNumber.length > 0) {
+        window.open(`https://wa.me/${phoneNumber}`, "_blank");
+      } else {
+        alert("Invalid phone number.");
+      }
     } else {
       alert("WhatsApp contact not available.");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete your profile?")) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/profiles/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+
+      if (response.ok) {
+        alert("Profile deleted successfully.");
+        router.push("/dashboard"); // Redirect after deletion
+      } else {
+        alert("Failed to delete profile.");
+      }
+    } catch (error) {
+      console.error("Error deleting profile:", error);
+      alert("An error occurred while deleting.");
     }
   };
 
@@ -56,9 +86,21 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
           <p><strong>Role: </strong>{profile.role}</p>
-          <p><strong>Skills: </strong> {profile.skills.join(", ")}</p>
+          <p className="text-sm flex flex-wrap gap-2">
+            <strong className="mr-2">Skills:</strong>
+            {profile.skills.map((skill, index) => (
+              <span
+                key={index}
+                className="py-1 px-2 bg-gray-600 text-white rounded-md text-xs"
+              >
+                {skill}
+              </span>
+            ))}
+          </p>
+
           <p><strong>Bio: </strong> {profile.bio}</p>
           <p><strong>Location: </strong> {profile.location}</p>
+          <p><strong>Phone: </strong> {profile.phone}</p>
           {profile.portfolio && (
             <p>
               <strong>Portfolio: </strong>
@@ -75,9 +117,15 @@ export default function ProfilePage() {
               Chat on WhatsApp
             </Button>
           </div>
+
+          {/* Show Delete Button if logged-in user is viewing their own profile */}
+          {user?.id === profile._id && (
+            <Button className="w-full bg-red-600 hover:bg-red-700 text-white mt-4 rounded-lg" onClick={handleDelete}>
+              Delete Profile
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>
-
   );
 }

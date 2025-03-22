@@ -6,6 +6,7 @@ export interface IProfile extends Document {
   username: string;
   role: string;
   skills: string[];
+  phone: Number;
   portfolio?: string;
   location?: string;
   bio: string;
@@ -17,6 +18,7 @@ const ProfileSchema: Schema = new Schema(
     username: { type: String, required: true, unique: true, trim: true },
     role: { type: String, required: true, trim: true },
     skills: { type: [String], required: true },
+    phone: { type: Number, required: true },
     portfolio: { type: String, trim: true },
     location: { type: String, trim: true },
     bio: { type: String, required: true, trim: true },

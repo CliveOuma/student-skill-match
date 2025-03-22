@@ -31,7 +31,7 @@ export default function TeamPage() {
   useEffect(() => {
     const fetchTeam = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/teams/${id}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teams/${id}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         if (!response.ok) throw new Error("Team not found");

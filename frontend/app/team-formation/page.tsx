@@ -50,7 +50,7 @@ export default function TeamsDashboard() {
     <div className={`min-h-screen p-6 transition-colors ${currentTheme === "dark" ? "bg-black text-white" : "text-black"}`}>
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center sm:text-left w-full sm:w-auto">
-          Team Dashboard
+          Teams Dashboard
         </h1>
 
         <Button

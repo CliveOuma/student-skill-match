@@ -7,13 +7,29 @@ import MessagesList from "@/components/ui/MessagesList";
 import LoadingSpinner from "@/components/ui/loading";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`, { transports: ["websocket"] });
+const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`, {
+  transports: ["websocket", "polling"],
+  withCredentials: true,
+});
 
 export default function ChatPage() {
   const { id } = useParams();
   const [messages, setMessages] = useState<{ fromSelf: boolean; message: string; timestamp: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [typing, setTyping] = useState(false);
+
+  // Function to get the user ID from the token
+  const getUserIdFromToken = (): string | null => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+      const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decode JWT
+      return decodedToken.userId;
+    } catch (error) {
+      console.error("Invalid token format:", error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     const savedMessages = localStorage.getItem(`chat-${id}`);
@@ -29,11 +45,28 @@ export default function ChatPage() {
     }
 
     const fetchMessages = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("User not logged in");
+        setLoading(false);
+        return;
+      }
+
+      const fromUserId = getUserIdFromToken();
+      if (!fromUserId) {
+        console.error("Invalid or missing user ID from token");
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/messages/getMsg`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ from: "user_id", to: id }),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({ from: fromUserId, to: id }),
         });
 
         if (!res.ok) throw new Error("Failed to fetch messages");
@@ -77,8 +110,20 @@ export default function ChatPage() {
   }, [id]);
 
   const sendMessage = (message: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    const messageData = { to: id, message, timestamp };
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("User not logged in");
+      return;
+    }
+
+    const fromUserId = getUserIdFromToken();
+    if (!fromUserId) {
+      console.error("Invalid or missing user ID from token");
+      return;
+    }
+
+    const timestamp = new Date().toISOString();
+    const messageData = { from: fromUserId, to: id, message, timestamp };
 
     socket.emit("send-msg", messageData);
     setMessages((prev) => {
@@ -97,13 +142,13 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex justify-center items-center p-2 sm:p-4 h-screen bg-gray-100">
-      <Card className="w-full max-w-[95%] sm:max-w-md md:max-w-2xl lg:max-w-3xl shadow-lg h-[85vh] sm:h-[80vh] flex flex-col overflow-hidden">
-        <CardHeader className="bg-gray-900 text-white rounded-t-lg p-3 sm:p-4">
-          <CardTitle className="text-center text-lg sm:text-2xl">Chat</CardTitle>
+    <div className="flex justify-center items-center min-h-screen w-full">
+      <Card className="w-full max-w-[90vw] sm:max-w-[80vw] md:max-w-xl lg:max-w-3xl shadow-lg h-[85vh] sm:h-[80vh] flex flex-col">
+        <CardHeader className="bg-gray-900 text-white rounded-t-lg p-2 sm:p-3">
+          <CardTitle className="text-center text-base sm:text-lg md:text-xl">Chat</CardTitle>
         </CardHeader>
 
-        <CardContent className="p-3 sm:p-4 flex-1 overflow-y-auto">
+        <CardContent className="p-2 sm:p-3 flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex justify-center items-center h-full">
               <LoadingSpinner />
@@ -113,14 +158,14 @@ export default function ChatPage() {
               {Array.isArray(messages) && messages.length > 0 ? (
                 <MessagesList messages={messages} onDeleteMessage={deleteMessage} />
               ) : (
-                <p className="text-gray-500 text-center">No messages yet, start a chat</p>
+                <p className="text-gray-500 text-center text-sm sm:text-base">No messages yet, start a chat</p>
               )}
-              {typing && <div className="p-2 text-gray-500 text-center">User is typing...</div>}
+              {typing && <div className="p-1 text-gray-500 text-center text-sm">User is typing...</div>}
             </>
           )}
         </CardContent>
 
-        <div className="p-3 sm:p-4 bg-gray-200 border-t rounded-b-lg">
+        <div className="p-2 sm:p-3 bg-gray-200 border-t rounded-b-lg">
           <MessageInput onSendMessage={sendMessage} />
         </div>
       </Card>

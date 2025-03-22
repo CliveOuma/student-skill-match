@@ -2,7 +2,7 @@
 import { useState } from "react";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`);
 
 interface MessageInputProps {
   onSendMessage: (message: string) => void;
@@ -23,10 +23,10 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
   };
 
   return (
-    <div className="flex items-center p-4 border-t bg-white">
+    <div className="flex items-center gap-2 p-2 sm:p-3 border-t bg-white w-full">
       <input
         type="text"
-        className="flex-1 p-2 border rounded-lg focus:outline-none"
+        className="flex-1 p-2 sm:p-3 border rounded-lg focus:outline-none text-sm sm:text-base w-full"
         placeholder="Type a message..."
         value={message}
         onChange={(e) => {
@@ -36,7 +36,7 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
         onKeyDown={(e) => e.key === "Enter" && handleSend()}
       />
       <button
-        className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
+        className="px-3 py-2 sm:px-4 sm:py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all text-sm sm:text-base"
         onClick={handleSend}
       >
         Send

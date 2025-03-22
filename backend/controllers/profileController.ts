@@ -10,10 +10,10 @@ interface AuthRequest extends Request {
 
 export const createProfile = async (req: Request, res: Response): Promise<void> => {
   console.log("🔍 Received Profile Creation Request:", req.body); 
-  const { name, username, role, skills, portfolio, location, bio } = req.body;
+  const { name, username, role, skills, phone, portfolio, location, bio } = req.body;
 
-  if (!name || !username || !role || !skills || !bio) {
-    console.error("Missing required fields:", { name, username, role, skills, bio });
+  if (!name || !username || !role || !skills || !phone || !bio) {
+    console.error("Missing required fields:", { name, username, role, skills, phone, bio });
     res.status(400).json({ message: "All required fields must be provided" });
     return;
   }
@@ -31,6 +31,7 @@ export const createProfile = async (req: Request, res: Response): Promise<void> 
       username,
       role,
       skills,
+      phone,
       portfolio,
       location,
       bio,
@@ -78,7 +79,7 @@ export const getProfileById = async (req: Request, res: Response): Promise<void>
 
 export const updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { name, username, role, skills, portfolio, location, bio } = req.body;
+  const { name, username, role, skills, phone, portfolio, location, bio } = req.body;
   const userId = req.user?.id; // Extracted from JWT Middleware
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -102,7 +103,7 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
 
     const updatedProfile = await Profile.findByIdAndUpdate(
       id,
-      { name, username, role, skills, portfolio, location, bio },
+      { name, username, role, skills, phone, portfolio, location, bio },
       { new: true, runValidators: true }
     );
 
