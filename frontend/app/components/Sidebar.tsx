@@ -1,7 +1,7 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Home, Search, Users} from "lucide-react";
+import { Home, Search, Users,} from "lucide-react";
 import Link from "next/link";
 import { useUser } from "../context/UserContext";
 
@@ -13,7 +13,7 @@ type Menu = {
 };
 
 export function SidebarMenu() {
-  const { user } = useUser(); // Get logged-in user
+  const { user } = useUser(); //Get logged-in user
 
   // If no user, return null (hide sidebar)
   if (!user) return null;

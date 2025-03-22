@@ -18,6 +18,7 @@ export default function HomeBanner() {
                     className="text-xl sm:text-2xl md:text-4xl font-bold mb-4"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
                 >
                     Find the Perfect Team for Your Next Project!
                 </motion.h1>
@@ -41,30 +42,26 @@ export default function HomeBanner() {
                     </Button>
                 </div>
             </section>
+
             {/* Features Section */}
             <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-12 px-4 sm:px-6">
-                <Card className="p-6 text-center shadow-lg w-full">
-                    <h3 className="text-lg sm:text-xl font-semibold">Skill-Based Matching</h3>
-                    <p className="text-gray-500 mt-2 text-sm sm:text-base">
-                        Find teammates with complementary skills for your project, whether it is a hackathon, research, or startup idea.
-                    </p>
-                </Card>
-
-                <Card className="p-6 text-center shadow-lg w-full">
-                    <h3 className="text-lg sm:text-xl font-semibold">Seamless Collaboration</h3>
-                    <p className="text-gray-500 mt-2 text-sm sm:text-base">
-                        Connect and collaborate with your team through an intuitive and interactive platform.
-                    </p>
-                </Card>
-
-                <Card className="p-6 text-center shadow-lg w-full">
-                    <h3 className="text-lg sm:text-xl font-semibold">Diverse Opportunities</h3>
-                    <p className="text-gray-500 mt-2 text-sm sm:text-base">
-                        Join hackathons, work on personal projects, or collaborate on academic research with like-minded peers.
-                    </p>
-                </Card>
+                {[ 
+                    { title: "Skill-Based Matching", desc: "Find teammates with complementary skills for your project, whether it’s a hackathon, research, or startup idea." },
+                    { title: "Seamless Collaboration", desc: "Connect and collaborate with your team through an intuitive and interactive platform." },
+                    { title: "Diverse Opportunities", desc: "Join hackathons, work on personal projects, or collaborate on academic research with like-minded peers." },
+                    { title: "Find a Co-Founder", desc: "Have a startup idea? Connect with students who share your vision and build something amazing together." },
+                    { title: "Bug Fix Experts", desc: "Stuck with a coding problem? Find experienced students who can debug your project and help you solve issues quickly." },
+                    { title: "Enhance Your Skills", desc: "Join a community where you can learn, grow, and improve your skills by working on real-world projects." },
+                ].map((feature, index) => (
+                    <Card
+                        key={index}
+                        className="p-6 text-center shadow-lg w-full transition-all duration-300 ease-in-out hover:scale-[1.02] hover:shadow-xl"
+                    >
+                        <h3 className="text-lg sm:text-xl font-semibold">{feature.title}</h3>
+                        <p className="text-gray-500 mt-2 text-sm sm:text-base">{feature.desc}</p>
+                    </Card>
+                ))}
             </section>
-
         </>
     );
 }
