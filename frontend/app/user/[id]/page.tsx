@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/app/context/UserContext";
-import { LoaderCircle } from "lucide-react";
+import LoadingSpinner from "@/components/ui/loading";
 
 type Profile = {
   _id: string;
@@ -53,10 +53,10 @@ export default function MyProfilePage() {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
 
-    router.push("/dashboard"); // Redirect after deletion
+    router.push("/dashboard"); 
   };
 
-  if (loading) return <div className="flex justify-center items-center h-screen"><LoaderCircle/></div>;
+  if (loading) return <div className="flex justify-center items-center h-screen"><LoadingSpinner/></div>;
   if (!profile) return <div className="flex justify-center items-center h-screen">Profile not found</div>;
 
   return (

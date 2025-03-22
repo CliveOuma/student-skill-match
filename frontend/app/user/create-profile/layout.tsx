@@ -1,9 +1,9 @@
 "use client";
 
 import { Suspense } from "react";
-import LoadingCircle from "@/components/ui/loading";
 import { SidebarMenu } from "@/app/components/Sidebar";
 import NavbarComponent from "@/app/components/Navbar";
+import LoadingSpinner from "@/components/ui/loading";
 
 export default function CreateProfileLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -14,7 +14,7 @@ export default function CreateProfileLayout({ children }: { children: React.Reac
                     <SidebarMenu />
                 </aside>
                 <main className="flex-1 p-6">
-                    <Suspense fallback={<LoadingCircle />}>
+                    <Suspense fallback={<LoadingSpinner />}>
                         {children}
                     </Suspense>
                 </main>

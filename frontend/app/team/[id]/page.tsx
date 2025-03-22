@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import LoadingCircle from "@/components/ui/loading";
 import { useUser } from "@/app/context/UserContext";
+import LoadingSpinner from "@/components/ui/loading";
 
 type Team = {
   _id: string;
@@ -71,7 +71,7 @@ export default function TeamPage() {
     }
   };
 
-  if (loading) return <div className="flex justify-center items-center h-screen"><LoadingCircle /></div>;
+  if (loading) return <div className="flex justify-center items-center h-screen"><LoadingSpinner/></div>;
   if (!team) return <div className="flex justify-center items-center h-screen">Team not found</div>;
 
   return (

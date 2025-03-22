@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import LoadingCircle from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/app/context/UserContext";
+import LoadingSpinner from "@/components/ui/loading";
 
 type Profile = {
   _id: string;
@@ -29,7 +29,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/profiles/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/profiles/${id}`);
         if (!response.ok) throw new Error("Profile not found");
         const data = await response.json();
         setProfile(data);
@@ -41,7 +41,7 @@ export default function ProfilePage() {
     if (id) fetchProfile();
   }, [id]);
 
-  if (!profile) return <div className="flex justify-center items-center h-screen"><LoadingCircle /></div>;
+  if (!profile) return <div className="flex justify-center items-center h-screen"><LoadingSpinner /></div>;
 
   const openWhatsApp = () => {
     if (profile?.phone) {
@@ -60,14 +60,14 @@ export default function ProfilePage() {
     if (!window.confirm("Are you sure you want to delete your profile?")) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/profiles/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
 
       if (response.ok) {
         alert("Profile deleted successfully.");
-        router.push("/dashboard"); // Redirect after deletion
+        router.push("/dashboard"); 
       } else {
         alert("Failed to delete profile.");
       }
