@@ -76,7 +76,7 @@ const Page = () => {
       form.reset();
       router.push("/login");
     } catch (error) {
-          console.error("Registration failed:", error);
+          console.error("Registration Failed:", error);
           toast.error("Something went wrong.");
         }
   }
