@@ -42,7 +42,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const decoded: { exp: number } = jwtDecode(token);
       const currentTime = Math.floor(Date.now() / 1000);
-
       if (decoded.exp < currentTime) {
         logout();
       }
@@ -53,37 +52,15 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   }, [logout]);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        logout();
-        return;
-      }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      logout();
+      return;
+    }
 
-      checkTokenExpiration();
+    checkTokenExpiration();
 
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        } else {
-          logout();
-        }
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-        logout();
-      }
-    };
-
-    fetchUser();
-
-    const interval = setInterval(checkTokenExpiration, 60000);
+    const interval = setInterval(checkTokenExpiration, 60000); // check every minute
     return () => clearInterval(interval);
   }, [checkTokenExpiration, logout]);
 

@@ -9,12 +9,11 @@ interface AuthRequest extends Request {
 
 
 export const createTeam = async (req: AuthRequest, res: Response): Promise<void> => {
-  console.log("🔍 Incoming Request Body:", req.body);
 
-  const { name, category, role, teamType, skills, teamSize, description } = req.body;
-  const userId = req.user?.id; // Extracted from JWT Middleware
+  const { name, groupLeaderPhone, category, teamType, skills, teamSize, description } = req.body; 
+  const userId = req.user?.id; 
 
-  if (!name || !category || !role || !teamType || !skills || !teamSize) {
+  if (!name || !groupLeaderPhone || !category || !teamType || !skills || !teamSize) { 
     res.status(400).json({ message: "All required fields must be provided" });
     return;
   }
@@ -22,13 +21,13 @@ export const createTeam = async (req: AuthRequest, res: Response): Promise<void>
   try {
     const team = await Team.create({
       name,
+      groupLeaderPhone, 
       category,
-      role,
       teamType,
       skills,
       teamSize,
       description,
-      createdBy: new mongoose.Types.ObjectId(userId), // Ensure ObjectId conversion
+      createdBy: new mongoose.Types.ObjectId(userId), 
     });
 
     res.status(201).json(team);
@@ -72,8 +71,8 @@ export const getTeamById = async (req: Request, res: Response): Promise<void> =>
 
 export const updateTeam = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { name, category, role, teamType, skills, teamSize, description } = req.body;
-  const userId = req.user?.id; // Extracted from JWT Middleware
+  const { name, category, leaderPhoneNumber, teamType, skills, teamSize, description } = req.body;
+  const userId = req.user?.id; 
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400).json({ message: "Invalid team ID format" });
@@ -95,7 +94,7 @@ export const updateTeam = async (req: AuthRequest, res: Response): Promise<void>
 
     const updatedTeam = await Team.findByIdAndUpdate(
       id,
-      { name, category, role, teamType, skills, teamSize, description },
+      { name, category, leaderPhoneNumber, teamType, skills, teamSize, description }, 
       { new: true, runValidators: true }
     );
 

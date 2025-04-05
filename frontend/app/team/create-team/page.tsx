@@ -8,7 +8,7 @@ import { Toaster, toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Select, { MultiValue, SingleValue } from "react-select";
 
-// Define the type for select options
+
 type SelectOption = {
     value: string;
     label: string;
@@ -27,8 +27,6 @@ const skills = {
         "UI/UX Design",
     ],
 };
-
-const teamRoles = ["Frontend Developer", "Backend Developer", "Data Analyst", "AI Developer", "Project Manager"];
 const projectCategories = ["Web Development", "Data Science", "AI & ML", "Cybersecurity", "Blockchain"];
 const teamTypes = ["Hackathon Team", "Startup Team", "Research Group", "Freelance Team"];
 
@@ -36,9 +34,9 @@ export default function TeamFormationForm() {
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
 
-    //Form state
+    // Form state
     const [teamName, setTeamName] = useState("");
-    const [role, setRole] = useState("");
+    const [groupLeaderPhone, setGroupLeaderPhone] = useState(""); 
     const [projectCategory, setProjectCategory] = useState("");
     const [teamType, setTeamType] = useState("");
     const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -49,13 +47,9 @@ export default function TeamFormationForm() {
         setMounted(true);
     }, []);
 
-    //Handlers for Select components
+    // Handlers for Select components
     const handleSkillChange = (selectedOptions: MultiValue<SelectOption>) => {
         setSelectedSkills(selectedOptions.map((option) => option.value));
-    };
-
-    const handleRoleChange = (selectedOption: SingleValue<SelectOption>) => {
-        setRole(selectedOption?.value || "");
     };
 
     const handleProjectCategoryChange = (selectedOption: SingleValue<SelectOption>) => {
@@ -66,34 +60,49 @@ export default function TeamFormationForm() {
         setTeamType(selectedOption?.value || "");
     };
 
-   
     const handleSubmit = async () => {
-        //Ensure required fields are provided
-        if (!teamName || !role || !projectCategory || !teamType || selectedSkills.length === 0 || !teamSize || !description) {
+        // Ensure required fields are provided
+        if (
+            !teamName ||
+            !groupLeaderPhone ||
+            !projectCategory ||
+            !teamType ||
+            selectedSkills.length === 0 ||
+            !teamSize ||
+            !description
+        ) {
             toast.error("Please fill in all the required fields.");
             return;
         }
 
-        //Ensure token exists
+        // Ensure token exists
         const token = localStorage.getItem("token");
         if (!token) {
             toast.error("You must be logged in to create a team.");
             return;
         }
+
+        // Phone number validation (basic format)
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(groupLeaderPhone)) {
+            toast.error("Please enter a valid 10-digit phone number.");
+            return;
+        }
+
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teams`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,  
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    name: teamName,  
+                    name: teamName,
                     category: projectCategory,
-                    role,
+                    groupLeaderPhone,
                     teamType,
                     skills: selectedSkills,
-                    teamSize: Number(teamSize), 
+                    teamSize: Number(teamSize),
                     description,
                 }),
             });
@@ -112,7 +121,6 @@ export default function TeamFormationForm() {
                 toast.error("Failed to create team. Please try again.");
             }
         }
-
     };
 
     return (
@@ -134,23 +142,20 @@ export default function TeamFormationForm() {
             {mounted && (
                 <>
                     <div className="mb-4">
-                        <h2 className="font-semibold mb-2">Select Role</h2>
-                        <Select options={teamRoles.map((role) => ({ value: role, label: role }))}
-                            styles={{
-                                control: (base) => ({ ...base, backgroundColor: "#2a2a2a", color: "white" }),
-                                singleValue: (base) => ({ ...base, color: "white" }),
-                                menu: (base) => ({ ...base, backgroundColor: "#2a2a2a" }),
-                                option: (base, { isFocused }) => ({
-                                    ...base,
-                                    backgroundColor: isFocused ? "#333" : "#2a2a2a",
-                                    color: "white",
-                                }),
-                            }}
-                            onChange={handleRoleChange} />
+                        <h2 className="font-semibold mb-2">Group Leader Phone Number</h2>
+                        <Input
+                            type="text"
+                            placeholder="Enter phone number"
+                            value={groupLeaderPhone}
+                            onChange={(e) => setGroupLeaderPhone(e.target.value)}
+                            className="p-2 w-full border rounded-md"
+                        />
                     </div>
+
                     <div className="mb-4">
                         <h2 className="font-semibold mb-2">Select Project Category</h2>
-                        <Select options={projectCategories.map((category) => ({ value: category, label: category }))}
+                        <Select
+                            options={projectCategories.map((category) => ({ value: category, label: category }))}
                             styles={{
                                 control: (base) => ({ ...base, backgroundColor: "#2a2a2a", color: "white" }),
                                 singleValue: (base) => ({ ...base, color: "white" }),
@@ -160,11 +165,15 @@ export default function TeamFormationForm() {
                                     backgroundColor: isFocused ? "#333" : "#2a2a2a",
                                     color: "white",
                                 }),
-                            }} onChange={handleProjectCategoryChange} />
+                            }}
+                            onChange={handleProjectCategoryChange}
+                        />
                     </div>
+
                     <div className="mb-4">
                         <h2 className="font-semibold mb-2">Select Team Type</h2>
-                        <Select options={teamTypes.map((type) => ({ value: type, label: type }))}
+                        <Select
+                            options={teamTypes.map((type) => ({ value: type, label: type }))}
                             styles={{
                                 control: (base) => ({ ...base, backgroundColor: "#2a2a2a", color: "white" }),
                                 singleValue: (base) => ({ ...base, color: "white" }),
@@ -175,11 +184,15 @@ export default function TeamFormationForm() {
                                     color: "white",
                                 }),
                             }}
-                            onChange={handleTeamTypeChange} />
+                            onChange={handleTeamTypeChange}
+                        />
                     </div>
+
                     <div className="mb-4">
                         <h2 className="font-semibold mb-2">Select Required Skills</h2>
-                        <Select isMulti options={skills.technical.map((skill) => ({ value: skill, label: skill }))}
+                        <Select
+                            isMulti
+                            options={skills.technical.map((skill) => ({ value: skill, label: skill }))}
                             styles={{
                                 control: (base) => ({ ...base, backgroundColor: "#2a2a2a", color: "white" }),
                                 singleValue: (base) => ({ ...base, color: "white" }),
@@ -190,7 +203,8 @@ export default function TeamFormationForm() {
                                     color: "white",
                                 }),
                             }}
-                            onChange={handleSkillChange} />
+                            onChange={handleSkillChange}
+                        />
                     </div>
                 </>
             )}

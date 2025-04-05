@@ -53,19 +53,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const getMe = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const user = await User.findById((req as any).user.id).select("-password");
-    if (!user) {
-      res.status(404).json({ message: "User not found" });
-      return;
-    }
-    res.json({ user });
-  } catch {
-    res.status(401).json({ message: "Unauthorized" });
-  }
-};
-
 export const logout = (req: Request, res: Response): void => {
   res.cookie("token", "", { httpOnly: true, expires: new Date(0) });
   res.json({ message: "Logged out successfully" });

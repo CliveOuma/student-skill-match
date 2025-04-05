@@ -10,8 +10,6 @@ import connectDB from "./config/db";
 import authRoutes from "./routes/authRoutes";
 import profileRoutes from "./routes/profileRoutes";
 import teamRoutes from "./routes/teamRoutes";
-import messageRoutes from "./routes/messageRoutes";
-import setupSocket from "./socket/socket";
 
 // Load environment variables
 dotenv.config();
@@ -35,57 +33,13 @@ app.use(morgan("dev"));
 app.use("/api/auth", authRoutes);
 app.use("/api", profileRoutes);
 app.use("/api", teamRoutes);
-app.use("/api/messages", messageRoutes);
 
 // Create HTTP server and attach Express
 const server = http.createServer(app);
 
-// Setup Socket.IO and attach to the HTTP server
-const io = new Server(server, {
-    cors: {
-        origin: process.env.FRONTEND_URL,
-        credentials: true,
-    },
-});
-
-// Initialize WebSocket
-setupSocket(io); 
-
-// Store online users
-const onlineUsers = new Map<string, string>();
-
-io.on("connection", (socket) => {
-    console.log(" A user connected:", socket.id);
-
-    // Add user to online users
-    socket.on("add-user", (userId: string) => {
-        onlineUsers.set(userId, socket.id);
-    });
-
-    // Handle message sending
-    socket.on("send-msg", (data: { to: string; message: string }) => {
-        const sendUserSocket = onlineUsers.get(data.to);
-        if (sendUserSocket) {
-            io.to(sendUserSocket).emit("msg-receive", {
-                message: data.message,
-                timestamp: new Date().toISOString(),
-            });
-        }
-    });
-
-    // Handle user disconnect
-    socket.on("disconnect", () => {
-        console.log("A user disconnected:", socket.id);
-        onlineUsers.forEach((value, key) => {
-            if (value === socket.id) {
-                onlineUsers.delete(key);
-            }
-        });
-    });
-});
 
 // Start the server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(` Server running on port ${PORT}`));
 
-export { server, io };
+export { server};

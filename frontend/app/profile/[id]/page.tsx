@@ -24,7 +24,7 @@ export default function ProfilePage() {
   const { id } = useParams();
   const [profile, setProfile] = useState<Profile | null>(null);
   const router = useRouter();
-  const { user } = useUser(); // Get logged-in user
+  const { user } = useUser(); 
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -91,7 +91,7 @@ export default function ProfilePage() {
             {profile.skills.map((skill, index) => (
               <span
                 key={index}
-                className="py-1 px-2 bg-gray-600 text-white rounded-md text-xs"
+                className="py-1 px-1 bg-gray-600 text-white rounded-md text-xs"
               >
                 {skill}
               </span>
@@ -109,12 +109,9 @@ export default function ProfilePage() {
               </a>
             </p>
           )}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <Button className="w-full sm:w-auto rounded-lg" onClick={() => router.push(`/chat/${id}`)}>
-              Chat with {profile?.name}
-            </Button>
+          <div className="flex mt-3">
             <Button className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={openWhatsApp}>
-              Chat on WhatsApp
+              Chat with {profile?.name}
             </Button>
           </div>
 

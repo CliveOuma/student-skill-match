@@ -93,11 +93,11 @@ export default function Dashboard() {
                 <p className={`text-sm ${currentTheme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
                   {profile.role}
                 </p>
-                <p className="text-sm flex flex-wrap gap-2">
+                <p className="text-sm flex mt-1 flex-wrap gap-2">
                   {profile.skills.map((skill, index) => (
                     <span
                       key={index}
-                      className=" py-1 px-2 bg-gray-600 text-white rounded-md text-xs"
+                      className=" py-1 px-1 bg-gray-600 text-white rounded-md text-xs"
                     >
                       {skill}
                     </span>

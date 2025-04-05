@@ -11,7 +11,7 @@ type Team = {
   _id: string;
   name: string;
   category: string;
-  role: string;
+  groupLeaderPhone: string;  
   teamType: string;
   skills: string[];
   teamSize: number;
@@ -19,7 +19,6 @@ type Team = {
   createdAt: string;
   createdBy: { _id: string; name: string; email: string } | string;
 };
-
 
 export default function TeamPage() {
   const { id } = useParams();
@@ -63,7 +62,7 @@ export default function TeamPage() {
 
         if (!response.ok) throw new Error("Failed to delete team");
         alert("Team deleted successfully!");
-        router.push("/team-formation"); 
+        router.push("/team-formation");
       } catch (error) {
         console.error("Error deleting team:", error);
         alert("Failed to delete team. Please try again.");
@@ -71,7 +70,14 @@ export default function TeamPage() {
     }
   };
 
-  if (loading) return <div className="flex justify-center items-center h-screen"><LoadingSpinner/></div>;
+  const openWhatsApp = () => {
+    if (team && team.groupLeaderPhone) {
+      const url = `https://wa.me/${team.groupLeaderPhone}`;
+      window.open(url, "_blank");
+    }
+  };
+
+  if (loading) return <div className="flex justify-center items-center h-screen"><LoadingSpinner /></div>;
   if (!team) return <div className="flex justify-center items-center h-screen">Team not found</div>;
 
   return (
@@ -82,16 +88,16 @@ export default function TeamPage() {
           <CardDescription className="text-gray-300">{team.teamType}</CardDescription>
         </CardHeader>
         <CardContent className="p-6 space-y-4">
-          <p><strong>Role: </strong>{team.role}</p>
+          <p><strong>Group Leader Phone Number: </strong>{team.groupLeaderPhone}</p>
           <p><strong>Category: </strong>{team.category}</p>
           <p><strong>Skills: </strong>{team.skills.join(", ")}</p>
           <p><strong>Team Size: </strong>{team.teamSize}</p>
           <p><strong>Description: </strong>{team.description || "No description provided"}</p>
           <p className="text-sm text-gray-500">Created: {new Date(team.createdAt).toLocaleDateString()}</p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Button className="w-full sm:w-auto rounded-lg" onClick={() => router.push(`/chat/${id}`)}>
-                Join Team
-              </Button>
+            <Button className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={openWhatsApp}>
+              Request to Join
+            </Button>
           </div>
           {/* Show Delete Button only if the logged-in user is the creator */}
           {user && team?.createdBy && user.id === (typeof team.createdBy === "string" ? team.createdBy : team.createdBy._id) && (
@@ -101,7 +107,6 @@ export default function TeamPage() {
               </Button>
             </div>
           )}
-
         </CardContent>
       </Card>
     </div>

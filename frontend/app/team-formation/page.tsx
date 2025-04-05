@@ -10,7 +10,7 @@ type Team = {
   _id: string;
   name: string;
   category: string;
-  role: string;
+  teamType: string;
   createdAt: string;
 };
 
@@ -76,7 +76,7 @@ export default function TeamsDashboard() {
                 <p className={`text-sm ${currentTheme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
                   {team.category}
                 </p>
-                <p className="text-sm">{`Role: ${team.role}`}</p>
+                <p className="text-sm mt-1">{`Team: ${team.teamType}`}</p>
                 <p className={`text-xs mt-1 ${currentTheme === "dark" ? "text-gray-500" : "text-gray-700"}`}>
                   Created: {formatDate(team.createdAt)}
                 </p>
