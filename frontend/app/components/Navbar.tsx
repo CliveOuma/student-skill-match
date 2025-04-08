@@ -5,19 +5,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, Sun, Moon } from "lucide-react";
-import { SidebarMenu } from "./Sidebar";
+import { Sidebar } from "./Sidebar";
 import Avatar from "@/components/ui/Avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import * as Icon from "react-feather";
 import { AiFillCaretDown } from "react-icons/ai";
-import { useUser } from "../context/UserContext";
+import { useAuth } from "../context/UserContext";
 
-export default function NavbarComponent() {
+export default function Navbar() {
     const router = useRouter();
     const { theme, setTheme, systemTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
-    const { user, logout } = useUser(); // Get user and logout function from context
+    const { isExpired, logout } = useAuth();
 
     useEffect(() => {
         setMounted(true);
@@ -44,7 +44,7 @@ export default function NavbarComponent() {
                                 >
                                     <SheetHeader>
                                         <SheetTitle className="text-xl font-bold">SkillMatch</SheetTitle>
-                                        <SidebarMenu />
+                                        <Sidebar />
                                     </SheetHeader>
                                 </SheetContent>
                             </Sheet>
@@ -52,7 +52,7 @@ export default function NavbarComponent() {
 
                         {/* Logo */}
                         <Link href="/" className="text-xl font-semibold tracking-wide hover:opacity-80 transition">
-                        SkillMatch
+                            SkillMatch
                         </Link>
                     </div>
 
@@ -82,11 +82,10 @@ export default function NavbarComponent() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                                 align="end"
-                                className={`w-44 shadow-lg border rounded-lg transition ${
-                                    currentTheme === "dark" ? "bg-white text-gray-900 border-gray-300" : "bg-white text-black"
-                                }`}
+                                className={`w-44 shadow-lg border rounded-lg transition ${currentTheme === "dark" ? "bg-white text-gray-900 border-gray-300" : "bg-white text-black"
+                                    }`}
                             >
-                                {user ? (
+                                {!isExpired ? (
                                     <DropdownMenuItem
                                         onClick={logout}
                                         className="py-2 px-3 flex items-center gap-2 hover:bg-opacity-80 transition"
@@ -109,6 +108,7 @@ export default function NavbarComponent() {
                                         </DropdownMenuItem>
                                     </>
                                 )}
+
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>

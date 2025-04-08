@@ -50,6 +50,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/jwt-decode": "^2.2.1",
     "@types/lodash": "^4.17.16",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -4,17 +4,34 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { useUser } from "@/app/context/UserContext";
 import {
   Users,
   UserPlus,
   Bug,
   Lightbulb,
 } from "lucide-react";
+import { useAuth } from "@/app/context/UserContext";
+import { toast } from "react-hot-toast";
 
 export default function HomeBanner() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const router = useRouter();
+
+  const handleGetStartedClick = () => {
+    if (!user) {
+      toast.error("Please log in first.");
+      return;
+    }
+    router.push("/dashboard");
+  };
+
+  const handleFindTeammateClick = () => {
+    if (!user) {
+      toast.error("Please log in first.");
+      return;
+    }
+    router.push("/find-teammates");
+  };
 
   return (
     <>
@@ -35,14 +52,14 @@ export default function HomeBanner() {
         <div className="mt-6 flex flex-col sm:flex-row justify-center gap-4">
           <Button
             className="bg-white text-blue-600 hover:bg-gray-100 w-full sm:w-auto"
-            onClick={() => router.push(user ? "/dashboard" : "/register")}
+            onClick={handleGetStartedClick}
           >
             Get started
           </Button>
 
           <Button
             className="border border-white bg-transparent hover:bg-white hover:text-blue-600 w-full sm:w-auto"
-            onClick={() => router.push(user ? "/find-teammates" : "/login")}
+            onClick={handleFindTeammateClick}
           >
             Find a teammate
           </Button>
@@ -51,7 +68,7 @@ export default function HomeBanner() {
 
       {/* Features Section */}
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-12 px-4 sm:px-6">
-        {[
+        {[ 
           {
             title: "Skill-Based Matching",
             icon: <Users className="mx-auto text-blue-600 w-10 h-10 mb-4" />,

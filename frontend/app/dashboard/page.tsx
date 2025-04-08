@@ -75,7 +75,7 @@ export default function Dashboard() {
 
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {profiles.map((profile) => (
-          <Link key={profile._id} href={`/profile/${profile._id}`} passHref>
+          <Link key={profile._id} href={`/view-profile/${profile._id}`} passHref>
             <div
               className={`p-4 rounded-lg shadow-md flex items-center space-x-4 transition-all cursor-pointer hover:shadow-lg ${currentTheme === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"
                 }`}
@@ -97,13 +97,12 @@ export default function Dashboard() {
                   {profile.skills.map((skill, index) => (
                     <span
                       key={index}
-                      className=" py-1 px-1 bg-gray-600 text-white rounded-md text-xs"
+                      className="py-1 px-1 bg-gray-600 text-white rounded-md text-xs" 
                     >
                       {skill}
                     </span>
                   ))}
                 </p>
-
                 <p className={`text-xs mt-1 ${currentTheme === "dark" ? "text-gray-500" : "text-gray-700"}`}>
                   Joined: {formatDate(profile.createdAt)}
                 </p>

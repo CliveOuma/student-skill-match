@@ -1,8 +1,15 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 
 interface User {
   id: string;
@@ -10,76 +17,81 @@ interface User {
   email: string;
 }
 
-interface UserContextType {
+interface AuthContextType {
   user: User | null;
-  login: (userData: User, token: string) => void;
+  isExpired: boolean;
+  login: (user: User, token: string) => void;
   logout: () => void;
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const UserProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isExpired, setIsExpired] = useState(false);
   const router = useRouter();
 
+  const login = (user: User, token: string) => {
+    localStorage.setItem("token", token);
+    setUser(user);
+    setIsExpired(false);
+  };
+
   const logout = useCallback(() => {
-    setUser(null);
     localStorage.removeItem("token");
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-    router.push("/");
+    setUser(null);
+    setIsExpired(true);
+    router.push("/login");
   }, [router]);
 
-  const checkTokenExpiration = useCallback(() => {
+  const checkToken = useCallback(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      logout();
+      setUser(null);
+      setIsExpired(true);
       return;
     }
 
     try {
-      const decoded: { exp: number } = jwtDecode(token);
-      const currentTime = Math.floor(Date.now() / 1000);
-      if (decoded.exp < currentTime) {
+      const decoded: { exp: number; id: string; name: string; email: string } = jwtDecode(token);
+      const now = Math.floor(Date.now() / 1000);
+
+      if (decoded.exp < now) {
+        console.warn("Token expired");
         logout();
+      } else {
+        setUser({
+          id: decoded.id,
+          name: decoded.name,
+          email: decoded.email,
+        });
+        setIsExpired(false);
       }
     } catch (error) {
-      console.error("Invalid token:", error);
+      console.error("Invalid token", error);
       logout();
     }
   }, [logout]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      logout();
-      return;
-    }
-
-    checkTokenExpiration();
-
-    const interval = setInterval(checkTokenExpiration, 60000); // check every minute
+    checkToken();
+    const interval = setInterval(() => {
+      checkToken();
+    }, 60000); // every 60s
     return () => clearInterval(interval);
-  }, [checkTokenExpiration, logout]);
-
-  const login = (userData: User, token: string) => {
-    setUser(userData);
-    localStorage.setItem("token", token);
-  };
+  }, [checkToken]);
 
   return (
-    <UserContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, isExpired, login, logout }}>
       {children}
-    </UserContext.Provider>
+    </AuthContext.Provider>
   );
 };
 
-export const useUser = () => {
-  const context = useContext(UserContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useUser must be used within a UserProvider");
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

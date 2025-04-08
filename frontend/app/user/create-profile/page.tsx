@@ -113,7 +113,6 @@ export default function CreateProfile() {
               onChange={handleChange}
               required
               className="w-full"
-              placeholder="Frontend, Backend, Fullstack, Data Analyst, AI Developer,"
             />
           </div>
 

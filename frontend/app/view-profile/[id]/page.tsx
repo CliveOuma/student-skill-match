@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams} from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@/app/context/UserContext";
 import LoadingSpinner from "@/components/ui/loading";
 
 type Profile = {
@@ -23,8 +22,6 @@ type Profile = {
 export default function ProfilePage() {
   const { id } = useParams();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const router = useRouter();
-  const { user } = useUser(); 
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -55,28 +52,6 @@ export default function ProfilePage() {
       alert("WhatsApp contact not available.");
     }
   };
-
-  const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete your profile?")) return;
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-
-      if (response.ok) {
-        alert("Profile deleted successfully.");
-        router.push("/dashboard"); 
-      } else {
-        alert("Failed to delete profile.");
-      }
-    } catch (error) {
-      console.error("Error deleting profile:", error);
-      alert("An error occurred while deleting.");
-    }
-  };
-
   return (
     <div className="flex justify-center items-center p-4">
       <Card className="w-full max-w-sm sm:max-w-md md:max-w-lg shadow-lg">
@@ -114,13 +89,6 @@ export default function ProfilePage() {
               Chat with {profile?.name}
             </Button>
           </div>
-
-          {/* Show Delete Button if logged-in user is viewing their own profile */}
-          {user?.id === profile._id && (
-            <Button className="w-full bg-red-600 hover:bg-red-700 text-white mt-4 rounded-lg" onClick={handleDelete}>
-              Delete Profile
-            </Button>
-          )}
         </CardContent>
       </Card>
     </div>

@@ -1,9 +1,9 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Home, Search, Users,} from "lucide-react";
+import { Home, Search, Users} from "lucide-react";
 import Link from "next/link";
-import { useUser } from "../context/UserContext";
+import { useAuth } from "../context/UserContext";
 
 type Menu = {
   label: string;
@@ -12,16 +12,16 @@ type Menu = {
   href: string;
 };
 
-export function SidebarMenu() {
-  const { user } = useUser(); //Get logged-in user
+export function Sidebar() {
+  const { user } = useAuth();
 
-  // If no user, return null (hide sidebar)
   if (!user) return null;
 
   const menus: Menu[] = [
     { label: "General", name: "Dashboard", icon: <Home size={20} className="mr-3" />, href: "/dashboard" },
     { label: "Find Team", name: "Find Teammates", icon: <Search size={20} className="mr-3" />, href: "/find-teammates" },
     { label: "Teams", name: "Team Formation", icon: <Users size={20} className="mr-3" />, href: "/team-formation" },
+   // { label: "Profile", name: "My Profile", icon: <User size={20} className="mr-3" />, href: "/profile" },
   ];
 
   return (

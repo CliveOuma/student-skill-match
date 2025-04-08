@@ -9,11 +9,8 @@ interface AuthRequest extends Request {
 
 
 export const createProfile = async (req: Request, res: Response): Promise<void> => {
-  console.log("🔍 Received Profile Creation Request:", req.body); 
   const { name, username, role, skills, phone, portfolio, location, bio } = req.body;
-
   if (!name || !username || !role || !skills || !phone || !bio) {
-    console.error("Missing required fields:", { name, username, role, skills, phone, bio });
     res.status(400).json({ message: "All required fields must be provided" });
     return;
   }
@@ -21,7 +18,6 @@ export const createProfile = async (req: Request, res: Response): Promise<void> 
   try {
     const existingProfile = await Profile.findOne({ username });
     if (existingProfile) {
-      console.error("Username already exists:", username);
       res.status(400).json({ message: "Username already exists" });
       return;
     }
@@ -36,8 +32,6 @@ export const createProfile = async (req: Request, res: Response): Promise<void> 
       location,
       bio,
     });
-
-    console.log("Profile Created Successfully:", profile);
     res.status(201).json(profile);
   } catch (error) {
     console.error("Profile Creation Error:", error);

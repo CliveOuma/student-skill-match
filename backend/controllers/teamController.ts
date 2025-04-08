@@ -9,10 +9,8 @@ interface AuthRequest extends Request {
 
 
 export const createTeam = async (req: AuthRequest, res: Response): Promise<void> => {
-
   const { name, groupLeaderPhone, category, teamType, skills, teamSize, description } = req.body; 
   const userId = req.user?.id; 
-
   if (!name || !groupLeaderPhone || !category || !teamType || !skills || !teamSize) { 
     res.status(400).json({ message: "All required fields must be provided" });
     return;

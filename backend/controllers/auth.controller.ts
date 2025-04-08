@@ -44,16 +44,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     //Generate JWT Token
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET!, { expiresIn: "1h" });
 
-    console.log("Generated Token:", token);
-
     res.status(200).json({ user, token });
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({ message: "Server Error" });
   }
-};
-
-export const logout = (req: Request, res: Response): void => {
-  res.cookie("token", "", { httpOnly: true, expires: new Date(0) });
-  res.json({ message: "Logged out successfully" });
 };

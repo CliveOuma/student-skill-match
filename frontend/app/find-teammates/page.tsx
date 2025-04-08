@@ -137,7 +137,7 @@ export default function FindTeammatesPage() {
           ) : searchClicked && searchTerm.length >= 3 ? (
             <div className="flex flex-col items-center justify-center text-center mt-6">
               <Search className="w-10 h-10 text-gray-500" />
-              <p className="text-red-400 text-lg mt-2 font-semibold">No matching profiles found.</p>
+              <p className="text-red-400 text-center text-lg mt-2 font-semibold">No matching profiles found.</p>
             </div>
           ) : null}
         </div>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@/app/context/UserContext";
+import { useAuth } from "@/app/context/UserContext";
 import LoadingSpinner from "@/components/ui/loading";
 
 type Team = {
@@ -23,7 +23,7 @@ type Team = {
 export default function TeamPage() {
   const { id } = useParams();
   const router = useRouter();
-  const { user } = useUser();
+  const { user } = useAuth();
   const [team, setTeam] = useState<Team | null>(null);
   const [loading, setLoading] = useState(true);
 

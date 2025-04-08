@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { SidebarMenu } from "@/app/components/Sidebar";
-import NavbarComponent from "@/app/components/Navbar";
-import LoadingSpinner from "@/components/ui/loading";
+import { Sidebar } from "@/app/components/Sidebar";
+import Navbar from "@/app/components/Navbar";
+import Loading from "@/components/ui/loading";
 
 export const metadata: Metadata = {
     title: "Student Skill Match",
@@ -13,13 +13,13 @@ export const metadata: Metadata = {
 export default function TeamFormationLayout({ children }: { children: React.ReactNode }) {
     return (
         <>
-            <NavbarComponent />
+            <Navbar />
             <div className="flex min-h-screen">
                 <aside className="w-64 bg-gray-100 dark:bg-gray-800 p-4 hidden sm:block">
-                    <SidebarMenu />
+                    <Sidebar/>
                 </aside>
                 <main className="flex-1 p-6">
-                    <Suspense fallback={<LoadingSpinner/>}>
+                    <Suspense fallback={<Loading/>}>
                         {children}
                     </Suspense>
                 </main>
