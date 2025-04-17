@@ -42,7 +42,10 @@ export default function ProfilePage() {
 
   const openWhatsApp = () => {
     if (profile?.phone) {
-      const phoneNumber = String(profile.phone).replace(/\D/g, "");
+      let phoneNumber = profile.phone.replace(/\D/g, "");
+      if (phoneNumber.startsWith("0")) {
+        phoneNumber = "254" + phoneNumber.slice(1); 
+      }
       if (phoneNumber.length > 0) {
         window.open(`https://wa.me/${phoneNumber}`, "_blank");
       } else {
@@ -51,7 +54,7 @@ export default function ProfilePage() {
     } else {
       alert("WhatsApp contact not available.");
     }
-  };
+  };  
   return (
     <div className="flex justify-center items-center p-4">
       <Card className="w-full max-w-sm sm:max-w-md md:max-w-lg shadow-lg">

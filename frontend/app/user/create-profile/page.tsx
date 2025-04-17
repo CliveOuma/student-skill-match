@@ -43,30 +43,42 @@ export default function CreateProfile() {
       return;
     }
 
+    const { name, username, role, skills, phone, bio } = profile;
+
+    if (
+      !name.trim() ||
+      !username.trim() ||
+      !role.trim() ||
+      !skills.trim() ||
+      !phone.trim() ||
+      !bio.trim()
+    ) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
     const payload = {
-      name: profile.name.trim(),
-      username: profile.username.trim(),
-      role: profile.role.trim(),
-      skills: profile.skills.split(",").map((skill) => skill.trim()),
-      phone: profile.phone, 
+      name: name.trim(),
+      username: username.trim(),
+      role: role.trim(),
+      skills: skills.split(",").map((skill) => skill.trim()),
+      phone,
       portfolio: profile.portfolio.trim(),
       location: profile.location.trim(),
-      bio: profile.bio.trim(),
+      bio: bio.trim(),
     };
 
-    
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/profiles`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
 
       const data = await response.json();
-      
 
       if (!response.ok) {
         toast.error(data.message || "Failed to create profile!");

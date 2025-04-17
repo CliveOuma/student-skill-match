@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 import { useRouter } from "next/navigation";
 import * as z from "zod";
@@ -36,7 +37,7 @@ const signUpSchema = z
     path: ["confirmPassword"],
   });
 
-const Page = () => {
+const RegisterPage = () => {
   const router = useRouter();
 
   const form = useForm<z.infer<typeof signUpSchema>>({
@@ -49,6 +50,7 @@ const Page = () => {
     },
   });
 
+  // Handle form submission
   async function handleSubmit(values: z.infer<typeof signUpSchema>) {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
@@ -74,11 +76,13 @@ const Page = () => {
 
       toast.success("Account created successfully!");
       form.reset();
-      router.push("/login");
+      // Redirect to OTP/Verification page
+      router.push(`/verify-email?email=${values.email}`);
+
     } catch (error) {
-          console.error("Registration Failed:", error);
-          toast.error("Something went wrong.");
-        }
+      console.error("Registration Failed:", error);
+      toast.error("Something went wrong.");
+    }
   }
 
   return (
@@ -144,4 +148,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default RegisterPage;

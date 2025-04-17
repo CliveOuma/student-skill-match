@@ -47,20 +47,23 @@ const Page = () => {
       const data = await response.json();
   
       if (!response.ok) {
-        toast.error(data.message || "Wrong email or password!");
+        // 🎯 Check if the error message is about verification
+        if (response.status === 401 && data.message?.toLowerCase().includes("verify")) {
+          toast.error("Your email is not verified. Please check your inbox.");
+        } else {
+          toast.error(data.message || "Wrong email or password!");
+        }
         return;
       }
   
-      login(data.user, data.token); 
+      login(data.user, data.token);
       toast.success("Logged in successfully!");
       router.push("/");
     } catch (error) {
       console.error("Login failed:", error);
       toast.error("Something went wrong.");
     }
-  };
-  
-
+  };  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 transition-all duration-300">
       <div className="w-[300px] md:w-full max-w-4xl bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden grid grid-cols-1 md:grid-cols-2">

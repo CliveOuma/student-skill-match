@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import Profile, { IProfile } from "../models/profile.model";
+import Profile, { IProfile } from "../models/profile";
 import mongoose from "mongoose";
 
-// Extend Express Request type to include 'user'
+
 interface AuthRequest extends Request {
   user?: { id: string };
 }
@@ -10,7 +10,7 @@ interface AuthRequest extends Request {
 
 export const createProfile = async (req: Request, res: Response): Promise<void> => {
   const { name, username, role, skills, phone, portfolio, location, bio } = req.body;
-  if (!name || !username || !role || !skills || !phone || !bio) {
+  if (!name || !username || !role || !skills || !phone || !location || !portfolio || !bio) {
     res.status(400).json({ message: "All required fields must be provided" });
     return;
   }
@@ -89,7 +89,7 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
       return;
     }
 
-    // Ensure only the profile owner can edit
+    
     if (profile._id.toString() !== userId) {
       res.status(403).json({ message: "You are not authorized to edit this profile" });
       return;

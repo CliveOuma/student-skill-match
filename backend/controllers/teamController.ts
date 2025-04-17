@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Team, { ITeam } from "../models/team.model";
+import Team, { ITeam } from "../models/team";
 import mongoose from "mongoose";
 
 // Extend Express Request type to include 'user'
