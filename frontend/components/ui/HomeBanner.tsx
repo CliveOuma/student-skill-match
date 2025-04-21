@@ -77,8 +77,8 @@ export default function HomeBanner() {
           {
             title: "Collaboration & Opportunities",
             icon: <Lightbulb className="mx-auto text-yellow-500 w-10 h-10 mb-4" />,
-            desc: "Connect with your team effortlessly and explore diverse opportunities like hackathons, academic research, and side projects.",
-          },          
+            desc: "Connect with your team effortlessly and explore diverse opportunities like hackathons, academic research, side projects.",
+          },                   
           {
             title: "Find a Co-Founder",
             icon: <UserPlus className="mx-auto text-green-600 w-10 h-10 mb-4" />,
@@ -88,7 +88,7 @@ export default function HomeBanner() {
             title: "Bug Fix Experts",
             icon: <Bug className="mx-auto text-red-500 w-10 h-10 mb-4" />,
             desc: "Stuck with a coding problem? Find experienced students who can debug your project and help you solve issues quickly.",
-          },
+          },         
         ].map((feature, index) => (
           <Card
             key={index}

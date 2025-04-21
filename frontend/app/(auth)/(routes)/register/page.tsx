@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ const signUpSchema = z
   });
 
 const RegisterPage = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof signUpSchema>>({
@@ -52,6 +53,7 @@ const RegisterPage = () => {
 
   // Handle form submission
   async function handleSubmit(values: z.infer<typeof signUpSchema>) {
+    setIsLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
         method: "POST",
@@ -82,6 +84,8 @@ const RegisterPage = () => {
     } catch (error) {
       console.error("Registration Failed:", error);
       toast.error("Something went wrong.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -137,9 +141,18 @@ const RegisterPage = () => {
                   <FormMessage className="text-red-500 dark:text-red-400" />
                 </FormItem>
               )} />
-              <Button type="submit" className="w-full bg-blue-500 text-white dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors">
+              <Button type="submit" className="w-full bg-blue-500 text-white dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
+                isLoading={isLoading} >
                 Submit
               </Button>
+              <div className="md:hidden text-center mt-4">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Already have an account?
+                  <Link href="/login" className="text-blue-500 pl-2 hover:underline dark:text-blue-400">
+                    Login
+                  </Link>
+                </p>
+              </div>
             </form>
           </Form>
         </div>

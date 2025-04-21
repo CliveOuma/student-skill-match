@@ -42,7 +42,7 @@ export default function ProfilePage() {
     };
 
     fetchProfile();
-  }, [id]);  // Dependency on `id` to re-fetch when it changes
+  }, [id]);  
 
   const handleDelete = async () => {
     if (!id) return;

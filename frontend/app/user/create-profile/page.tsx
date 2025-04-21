@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function CreateProfile() {
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { theme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -34,6 +35,7 @@ export default function CreateProfile() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
@@ -69,6 +71,7 @@ export default function CreateProfile() {
     };
 
     try {
+      setIsLoading(true);
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/profiles`, {
         method: "POST",
         headers: {
@@ -90,6 +93,8 @@ export default function CreateProfile() {
     } catch (error) {
       console.error("Profile creation failed:", error);
       toast.error("Something went wrong.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -184,7 +189,8 @@ export default function CreateProfile() {
             />
           </div>
 
-          <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600">
+          <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600"
+            isLoading={isLoading}>
             Create Profile
           </Button>
         </form>

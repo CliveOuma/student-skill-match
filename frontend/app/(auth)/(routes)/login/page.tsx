@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,8 +24,9 @@ const signInSchema = z.object({
 });
 
 const Page = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { login } = useAuth(); 
+  const { login } = useAuth();
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -36,6 +37,7 @@ const Page = () => {
   });
 
   const handleSubmit = async (values: { email: string; password: string }) => {
+    setIsLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
         method: "POST",
@@ -43,11 +45,10 @@ const Page = () => {
         credentials: "include",
         body: JSON.stringify(values),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
-        // 🎯 Check if the error message is about verification
         if (response.status === 401 && data.message?.toLowerCase().includes("verify")) {
           toast.error("Your email is not verified. Please check your inbox.");
         } else {
@@ -55,15 +56,17 @@ const Page = () => {
         }
         return;
       }
-  
+
       login(data.user, data.token);
       toast.success("Logged in successfully!");
       router.push("/");
     } catch (error) {
       console.error("Login failed:", error);
       toast.error("Something went wrong.");
+    } finally {
+      setIsLoading(false);
     }
-  };  
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 transition-all duration-300">
       <div className="w-[300px] md:w-full max-w-4xl bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden grid grid-cols-1 md:grid-cols-2">
@@ -97,7 +100,7 @@ const Page = () => {
                         className="dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
                       />
                     </FormControl>
-                    <FormMessage className="text-red-500 dark:text-red-400"/>
+                    <FormMessage className="text-red-500 dark:text-red-400" />
                   </FormItem>
                 )}
               />
@@ -120,13 +123,22 @@ const Page = () => {
                   </FormItem>
                 )}
               />
-
               <Button
                 type="submit"
                 className="w-full bg-blue-500 text-white dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
+                isLoading={isLoading}
               >
                 Submit
               </Button>
+
+              <div className="md:hidden text-center mt-4">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Don&apos;t have an account?
+                  <Link href="/register" className="text-blue-500 pl-2 hover:underline dark:text-blue-400">
+                    Register
+                  </Link>
+                </p>
+              </div>
             </form>
           </Form>
         </div>

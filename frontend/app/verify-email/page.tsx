@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
@@ -14,6 +14,7 @@ export default function VerifyEmailPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("Click the button below to confirm your email.");
   const [verified, setVerified] = useState(false);
+  const [isResendDisabled, setIsResendDisabled] = useState(false); 
 
   const handleResendEmail = async () => {
     if (!email) {
@@ -34,6 +35,9 @@ export default function VerifyEmailPage() {
       setMessage(res.data.message);
       setStatus("success");
       toast.success("Verification email resent!");
+
+      // Disable the resend button after sending the confirmation link
+      setIsResendDisabled(true);
     } catch (error: unknown) {
       let errorMessage = "Failed to resend email.";
 
@@ -87,26 +91,31 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     const checkVerificationStatus = async () => {
       if (!email) return;
-
+  
       try {
         const res = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/auth/check-verification-status?email=${email}`
         );
+  
         if (res.data.isVerified) {
           setVerified(true);
           setMessage("Email already verified.");
           toast.success("Email is already verified!");
-
-          // Redirect to login page if verified
           router.push("/login");
+        } else {
+          // Email not verified
+          setVerified(false);
+          setMessage("Email not verified yet.");
+          setIsResendDisabled(false);
+          toast.error("Email not verified.");
         }
       } catch (err) {
         console.error("Error checking status:", err);
       }
     };
-
+  
     checkVerificationStatus();
-  }, [email, router]);
+  }, [email, router]);  
 
   // Automatically verify on mount if token is present
   useEffect(() => {
@@ -131,7 +140,7 @@ export default function VerifyEmailPage() {
             </p>
 
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Click the button in the email to confirm your account. If you don&apos;t see it, check your spam folder.
+              Click the button in the email to finish creating your account. If you don&apos;t see it, check your spam folder.
             </p>
 
             {status === "error" && <p className="text-red-500 text-sm">{message}</p>}
@@ -144,14 +153,13 @@ export default function VerifyEmailPage() {
         )}
 
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400 space-x-4">
-          <Button onClick={handleResendEmail} disabled={status === "loading"}>
+          <Button onClick={handleResendEmail} disabled={isResendDisabled || status === "loading"}>
             {status === "loading" ? "Sending..." : "Resend Email"}
           </Button>
 
           <p
             className="mt-4 hover:underline cursor-pointer"
-            onClick={() => router.push("/")}
-          >
+            onClick={() => router.push("/")}>
             Back to Home
           </p>
         </div>

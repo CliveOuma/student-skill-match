@@ -15,6 +15,7 @@ type Profile = {
 };
 
 export default function Dashboard() {
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { theme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -25,6 +26,7 @@ export default function Dashboard() {
 
     const fetchProfiles = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/profiles`, {
           method: "GET",
           headers: {
@@ -39,6 +41,8 @@ export default function Dashboard() {
         setProfiles(data);
       } catch (error) {
         console.error("Error fetching profiles:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -65,10 +69,10 @@ export default function Dashboard() {
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center sm:text-left w-full sm:w-auto">
           Profiles Dashboard
         </h1>
-
         <Button
           onClick={() => router.push("/user/create-profile")}
-          className="w-full sm:w-auto my-3">
+          className="w-full sm:w-auto my-3"
+          isLoading={isLoading} >
           Create Profile
         </Button>
       </div>
@@ -97,7 +101,7 @@ export default function Dashboard() {
                   {profile.skills.map((skill, index) => (
                     <span
                       key={index}
-                      className="py-1 px-1 bg-gray-600 text-white rounded-md text-xs" 
+                      className="py-1 px-1 bg-gray-600 text-white rounded-md text-xs"
                     >
                       {skill}
                     </span>

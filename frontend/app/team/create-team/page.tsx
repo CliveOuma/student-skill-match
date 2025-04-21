@@ -31,12 +31,15 @@ const projectCategories = ["Web Development", "Data Science", "AI & ML", "Cybers
 const teamTypes = ["Hackathon Team", "Startup Team", "Research Group", "Freelance Team"];
 
 export default function TeamFormationForm() {
+
+    const [isLoading, setIsLoading] = useState(false);
+
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
 
-    // Form state
+
     const [teamName, setTeamName] = useState("");
-    const [groupLeaderPhone, setGroupLeaderPhone] = useState(""); 
+    const [groupLeaderPhone, setGroupLeaderPhone] = useState("");
     const [projectCategory, setProjectCategory] = useState("");
     const [teamType, setTeamType] = useState("");
     const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -61,7 +64,6 @@ export default function TeamFormationForm() {
     };
 
     const handleSubmit = async () => {
-        // Ensure required fields are provided
         if (
             !teamName ||
             !groupLeaderPhone ||
@@ -75,14 +77,12 @@ export default function TeamFormationForm() {
             return;
         }
 
-        // Ensure token exists
         const token = localStorage.getItem("token");
         if (!token) {
             toast.error("You must be logged in to create a team.");
             return;
         }
 
-        // Phone number validation (basic format)
         const phoneRegex = /^[0-9]{10}$/;
         if (!phoneRegex.test(groupLeaderPhone)) {
             toast.error("Please enter a valid 10-digit phone number.");
@@ -90,6 +90,7 @@ export default function TeamFormationForm() {
         }
 
         try {
+            setIsLoading(true);
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teams`, {
                 method: "POST",
                 headers: {
@@ -106,6 +107,7 @@ export default function TeamFormationForm() {
                     description,
                 }),
             });
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || "Failed to create team");
@@ -120,6 +122,8 @@ export default function TeamFormationForm() {
             } else {
                 toast.error("Failed to create team. Please try again.");
             }
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -221,7 +225,8 @@ export default function TeamFormationForm() {
                 onChange={(e) => setDescription(e.target.value)}
                 className="mb-4"
             />
-            <Button onClick={handleSubmit} className="w-full">Create Team</Button>
+            <Button onClick={handleSubmit} className="w-full"
+                isLoading={isLoading}>Create Team</Button>
         </div>
     );
 }

@@ -15,6 +15,7 @@ type Team = {
 };
 
 export default function TeamsDashboard() {
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { theme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -24,12 +25,15 @@ export default function TeamsDashboard() {
     setMounted(true);
     const fetchTeams = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teams`);
         if (!response.ok) throw new Error("Failed to fetch teams");
         const data = await response.json();
         setTeams(data);
       } catch (error) {
         console.error("Error fetching teams:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -55,7 +59,8 @@ export default function TeamsDashboard() {
 
         <Button
           onClick={() => router.push("/team/create-team")}
-          className="w-full sm:w-auto my-3">
+          className="w-full sm:w-auto my-3"
+          isLoading={isLoading}>
           Create Team
         </Button>
       </div>
