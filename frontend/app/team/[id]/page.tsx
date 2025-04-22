@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/app/context/UserContext";
-import LoadingSpinner from "@/components/ui/loading";
 
 type Team = {
   _id: string;
@@ -25,7 +24,6 @@ export default function TeamPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [team, setTeam] = useState<Team | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTeam = async () => {
@@ -75,7 +73,6 @@ export default function TeamPage() {
     }
   };
 
-  if (loading) return <div className="flex justify-center items-center h-screen"><LoadingSpinner /></div>;
   if (!team) return <div className="flex justify-center items-center h-screen">Team not found</div>;
 
   return (
