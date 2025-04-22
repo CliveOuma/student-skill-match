@@ -21,7 +21,6 @@ type Team = {
 };
 
 export default function TeamPage() {
-  const [isLoading, setIsLoading] = useState(false);
   const { id } = useParams();
   const router = useRouter();
   const { user } = useAuth();
@@ -31,7 +30,6 @@ export default function TeamPage() {
   useEffect(() => {
     const fetchTeam = async () => {
       try {
-        setIsLoading(true);
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teams/${id}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
@@ -40,8 +38,6 @@ export default function TeamPage() {
         setTeam(data);
       } catch (error) {
         console.error("Error fetching team:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -98,8 +94,7 @@ export default function TeamPage() {
           <p className="text-sm text-gray-500">Created: {new Date(team.createdAt).toLocaleDateString()}</p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Button className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white rounded-lg" 
-            onClick={openWhatsApp}
-            isLoading={isLoading} >
+            onClick={openWhatsApp} >
               Request to Join
             </Button>
           </div>
