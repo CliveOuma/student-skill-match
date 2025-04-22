@@ -59,7 +59,7 @@ const Page = () => {
 
       login(data.user, data.token);
       toast.success("Logged in successfully!");
-      router.push("/");
+      router.push("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
       toast.error("Something went wrong.");
