@@ -1,4 +1,3 @@
-// models/user.ts
 import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface IUser extends Document {
@@ -9,6 +8,7 @@ export interface IUser extends Document {
   verificationToken?: string;
   verificationTokenExpires?: Date;
   isVerified: boolean;
+  createdAt: Date; 
 }
 
 const userSchema = new Schema<IUser>(
@@ -19,8 +19,18 @@ const userSchema = new Schema<IUser>(
     verificationToken: { type: String },
     verificationTokenExpires: { type: Date },
     isVerified: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
+);
+
+// TTL index: delete unverified users after 30 minutes
+userSchema.index(
+  { createdAt: 1 },
+  {
+    expireAfterSeconds: 1800, // 30 minutes
+    partialFilterExpression: { isVerified: false }, // Only unverified users will be deleted
+  }
 );
 
 const User = mongoose.model<IUser>("User", userSchema);

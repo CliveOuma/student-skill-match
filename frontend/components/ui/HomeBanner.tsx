@@ -4,14 +4,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import {
-  Users,
-  UserPlus,
-  Bug,
-  Lightbulb,
-} from "lucide-react";
+import { Users, UserPlus, Bug, Lightbulb } from "lucide-react";
 import { useAuth } from "@/app/context/UserContext";
-import { toast } from "react-hot-toast";
 
 export default function HomeBanner() {
   const { user } = useAuth();
@@ -19,15 +13,15 @@ export default function HomeBanner() {
 
   const handleGetStartedClick = () => {
     if (!user) {
-      toast.error("Please log in first.");
+      router.push(`/login?redirect=/dashboard`);
       return;
     }
     router.push("/dashboard");
   };
-
+  
   const handleFindTeammateClick = () => {
     if (!user) {
-      toast.error("Please log in first.");
+      router.push(`/login?redirect=/find-teammates`);
       return;
     }
     router.push("/find-teammates");
@@ -68,7 +62,7 @@ export default function HomeBanner() {
 
       {/* Features Section */}
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-12 px-4 sm:px-6">
-        {[ 
+        {[
           {
             title: "Skill-Based Matching",
             icon: <Users className="mx-auto text-blue-600 w-10 h-10 mb-4" />,
@@ -78,7 +72,7 @@ export default function HomeBanner() {
             title: "Collaboration & Opportunities",
             icon: <Lightbulb className="mx-auto text-yellow-500 w-10 h-10 mb-4" />,
             desc: "Connect with your team effortlessly and explore diverse opportunities like hackathons, academic research, side projects.",
-          },                   
+          },
           {
             title: "Find a Co-Founder",
             icon: <UserPlus className="mx-auto text-green-600 w-10 h-10 mb-4" />,
@@ -88,7 +82,7 @@ export default function HomeBanner() {
             title: "Bug Fix Experts",
             icon: <Bug className="mx-auto text-red-500 w-10 h-10 mb-4" />,
             desc: "Stuck with a coding problem? Find experienced students who can debug your project and help you solve issues quickly.",
-          },         
+          },
         ].map((feature, index) => (
           <Card
             key={index}
