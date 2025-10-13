@@ -147,7 +147,6 @@ export default function CreateProfile() {
               onChange={handleChange}
               required
               className="w-full"
-              pattern="^\+?[0-9]{7,15}$"
             />
 
           </div>
