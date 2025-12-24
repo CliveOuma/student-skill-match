@@ -30,7 +30,7 @@ export default function HomeBanner() {
   return (
     <>
       {/* Hero Section */}
-      <section className="text-center py-10 px-4 sm:px-6 md:py-16 mt-10 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl">
+      <section className="text-center py-10 px-4 sm:px-6 md:py-16 mt-10 bg-gradient-to-r from-orange-600 to-amber-800 text-white rounded-2xl">
         <motion.h1
           className="text-xl sm:text-2xl md:text-4xl font-bold mb-4"
           initial={{ opacity: 0, y: -20 }}
@@ -40,7 +40,7 @@ export default function HomeBanner() {
           Find the Perfect Team for Your Next Project!
         </motion.h1>
         <p className="text-sm sm:text-base md:text-lg opacity-90">
-          Match with students who complement your skills and interests for hackathons, personal projects, and academic collaborations.
+          Match with collaborators who complement your skills and interests for hackathons, personal projects, and academic collaborations.
         </p>
 
         <div className="mt-6 flex flex-col sm:flex-row justify-center gap-4">

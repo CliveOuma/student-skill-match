@@ -7,6 +7,7 @@ import { Toaster, toast } from "react-hot-toast";
 import { debounce } from "lodash";
 import { Search, Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 
 interface Profile {
   _id: string;
@@ -103,7 +104,7 @@ export default function FindTeammatesPage() {
           />
           <button
             onClick={handleSearch}
-            className="bg-blue-600 p-3 rounded-lg text-white hover:bg-blue-500 transition flex items-center justify-center"
+            className="bg-orange-600 p-3 rounded-lg text-white hover:bg-orange-500 transition flex items-center justify-center"
           >
             <Search className="w-5 h-5" />
           </button>
@@ -116,23 +117,25 @@ export default function FindTeammatesPage() {
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredProfiles.length > 0 ? (
             filteredProfiles.map((profile) => (
-              <Card key={profile._id} className="p-4 rounded-lg shadow-md transition-all border border-gray-300">
-                <CardContent>
-                  <h3 className="text-lg md:text-xl font-bold">{profile.name}</h3>
-                  <p className="text-blue-500 text-sm md:text-base">{profile.role}</p>
-                  {profile.location && <p className="text-sm mt-1">{profile.location}</p>}
-                  <div className="mt-2">
-                    <span className="text-gray-400 text-sm">Skills:</span>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {profile.skills.map((skill, index) => (
-                        <span key={index} className="bg-blue-600 px-2 py-1 rounded-md text-xs md:text-sm">
-                          {skill}
-                        </span>
-                      ))}
+              <Link key={profile._id} href={`/view-profile/${profile._id}`} className="block">
+                <Card className="p-4 rounded-lg shadow-md transition-all border border-gray-300 cursor-pointer hover:shadow-lg">
+                  <CardContent>
+                    <h3 className="text-lg md:text-xl font-bold">{profile.name}</h3>
+                    <p className="text-blue-500 text-sm md:text-base">{profile.role}</p>
+                    {profile.location && <p className="text-sm mt-1">{profile.location}</p>}
+                    <div className="mt-2">
+                      <span className="text-gray-400 text-sm">Skills:</span>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {profile.skills.map((skill, index) => (
+                          <span key={index} className="bg-blue-600 px-2 py-1 rounded-md text-xs md:text-sm">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             ))
           ) : searchClicked && searchTerm.length >= 3 ? (
             <div className="flex flex-col items-center justify-center text-center mt-6">

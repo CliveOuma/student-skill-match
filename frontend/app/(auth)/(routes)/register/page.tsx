@@ -22,15 +22,24 @@ const signUpSchema = z
   .object({
     name: z
       .string()
-      .min(2, "Name should have at least 2 characters.")
-      .max(50, "Name should not exceed 50 characters")
-      .refine(
-        (value) => /^[a-zA-Z]+[-'s]?[a-zA-Z ]+$/.test(value),
-        "Name should contain only alphabets."
+      .min(5, "Name must be at least 5 characters")
+      .max(50, "Name cannot exceed 50 characters"),
+    email: z
+      .string()
+      .min(1, "Email is required")
+      .email("Please enter a valid email address")
+      .toLowerCase(),
+
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(100, "Password cannot exceed 100 characters")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,}$/,
+        "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character"
       ),
-    email: z.string().email("Email must be valid"),
-    password: z.string().min(6, "Password should have at least 6 characters."),
-    confirmPassword: z.string().min(6, "Password should have at least 6 characters."),
+
+    confirmPassword: z.string()
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -76,10 +85,9 @@ const RegisterPage = () => {
         return;
       }
 
-      toast.success("Account created successfully!");
       form.reset();
-      // Redirect to OTP/Verification page
-      router.push(`/verify-email?email=${values.email}`);
+      toast.success("Account created successfully!.");
+      router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
 
     } catch (error) {
       console.error("Registration Failed:", error);
@@ -129,6 +137,20 @@ const RegisterPage = () => {
                   <FormControl>
                     <Input type="password" {...field} className="dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600" />
                   </FormControl>
+                  <div className="mt-2 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                    <p className="font-medium">Password must contain:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li className={field.value?.match(/[A-Z]/) ? 'text-green-500' : 'text-gray-400'}>At least one uppercase letter</li>
+                      <li className={field.value?.match(/[a-z]/) ? 'text-green-500' : 'text-gray-400'}>At least one lowercase letter</li>
+                      <li className={field.value?.match(/\d/) ? 'text-green-500' : 'text-gray-400'}>At least one number</li>
+                      <li className={field.value?.match(/[!@#$%^&*()_+]/) ? 'text-green-500' : 'text-gray-400'}>
+                        At least one special character (!@#$%^&*()_+)
+                      </li>
+                      <li className={(field.value?.length >= 8) ? 'text-green-500' : 'text-gray-400'}>
+                        At least 8 characters long
+                      </li>
+                    </ul>
+                  </div>
                   <FormMessage className="text-red-500 dark:text-red-400" />
                 </FormItem>
               )} />
@@ -141,14 +163,14 @@ const RegisterPage = () => {
                   <FormMessage className="text-red-500 dark:text-red-400" />
                 </FormItem>
               )} />
-              <Button type="submit" className="w-full bg-blue-500 text-white dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
+              <Button type="submit" className="w-full bg-orange-500 text-white dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700 transition-colors"
                 isLoading={isLoading} >
                 Submit
               </Button>
               <div className="md:hidden text-center mt-4">
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   Already have an account?
-                  <Link href="/login" className="text-blue-500 pl-2 hover:underline dark:text-blue-400">
+                  <Link href="/login" className="text-orange-400 pl-2 hover:underline dark:text-orange-400">
                     Login
                   </Link>
                 </p>

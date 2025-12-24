@@ -49,7 +49,7 @@ const Page = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        if (response.status === 401 && data.message?.toLowerCase().includes("verify")) {
+        if ((response.status === 401 || response.status === 403) && data.message?.toLowerCase().includes("verify")) {
           toast.error("Your email is not verified. Please check your inbox.");
         } else {
           toast.error(data.message || "Wrong email or password!");
@@ -125,7 +125,7 @@ const Page = () => {
               />
               <Button
                 type="submit"
-                className="w-full bg-blue-500 text-white dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
+                className="w-full bg-orange-500 text-white dark:bg-orange-600 hover:bg-orange-600 dark:hover:bg-orange-700 transition-colors"
                 isLoading={isLoading}
               >
                 Submit
@@ -134,7 +134,7 @@ const Page = () => {
               <div className="md:hidden text-center mt-4">
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   Don&apos;t have an account?
-                  <Link href="/register" className="text-blue-500 pl-2 hover:underline dark:text-blue-400">
+                  <Link href="/register" className="text-orange-500 pl-2 hover:underline dark:text-blue-400">
                     Register
                   </Link>
                 </p>

@@ -4,7 +4,6 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
-import { Server } from "socket.io";
 import http from "http";
 import connectDB from "./config/db";
 import authRoutes from "./routes/authRoutes";
@@ -22,8 +21,39 @@ connectDB();
 // Initialize Express app
 const app = express();
 
+// CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : [
+      'http://localhost:3000', // Default for development
+    ];
+
+// Production origin
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 // Middleware
-app.use(cors({ credentials: true, origin: process.env.FRONTEND_URL }));
+app.use(cors({
+  credentials: true,
+  origin: (origin, callback) => {
+    // Allow requests with no origin only in development (for testing with Postman)
+    if (!origin) {
+      if (env === 'development') {
+        return callback(null, true);
+      }
+      // In production, reject requests without origin for security
+      return callback(new Error('CORS: Origin header is required'), false);
+    }
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(helmet());

@@ -3,7 +3,6 @@ import User from "../models/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { hashPassword } from "../utils/hash";
-import crypto from "crypto";
 import { sendVerificationEmail } from "../utils/sendEmail";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -17,20 +16,20 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     const hashedPassword = await hashPassword(password);
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+    const codeExpires = new Date(Date.now() + 60 * 1000); // 60 seconds (1 minute)
 
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-    const tokenExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-    const user = await User.create({
+    await User.create({
       name,
       email,
       password: hashedPassword,
-      verificationToken,
-      verificationTokenExpires: tokenExpires,
+      verificationCode,
+      verificationCodeExpires: codeExpires,
+      isVerified: false,
     });
 
-    await sendVerificationEmail(email, verificationToken);
-    res.status(201).json({ message: "User registered. Check your email to verify your account." });
+    await sendVerificationEmail(email, verificationCode);
+    res.status(201).json({ message: "User registered. Verification code sent." });
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -57,16 +56,18 @@ export const resendVerificationEmail = async (req: Request, res: Response): Prom
        return;
     }
 
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-    const tokenExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+    const codeExpires = new Date(Date.now() + 60 * 1000); // 60 seconds (1 minute)
 
-    user.verificationToken = verificationToken;
-    user.verificationTokenExpires = tokenExpires;
+    user.verificationCode = verificationCode;
+    user.verificationCodeExpires = codeExpires;
+    user.verificationToken = undefined;
+    user.verificationTokenExpires = undefined;
     await user.save();
 
-    await sendVerificationEmail(email, verificationToken);
+    await sendVerificationEmail(email, verificationCode);
 
-    res.status(200).json({ message: "Verification email resent successfully." });
+    res.status(200).json({ message: "Verification code resent successfully." });
   } catch (error) {
     console.error("Resend error:", error);
     res.status(500).json({ message: "Something went wrong." });
@@ -74,19 +75,39 @@ export const resendVerificationEmail = async (req: Request, res: Response): Prom
 };
 
 export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
-  const { token } = req.query;
+  const { email, code } = req.body;
+  
+  if (!email || !code) {
+    res.status(400).json({ message: "Email and code are required" });
+    return;
+  }
+
   try {
-    const user = await User.findOne({
-      verificationToken: token,
-      verificationTokenExpires: { $gt: new Date() },
-    });
+    const user = await User.findOne({ email });
 
     if (!user) {
-      res.status(400).json({ message: "Invalid or expired token" });
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    if (user.isVerified) {
+      res.status(200).json({ message: "Email is already verified" });
+      return;
+    }
+
+    if (
+      !user.verificationCode ||
+      user.verificationCode !== code ||
+      !user.verificationCodeExpires ||
+      user.verificationCodeExpires < new Date()
+    ) {
+      res.status(400).json({ message: "Invalid or expired verification code" });
       return;
     }
 
     user.isVerified = true;
+    user.verificationCode = undefined;
+    user.verificationCodeExpires = undefined;
     user.verificationToken = undefined;
     user.verificationTokenExpires = undefined;
     await user.save();
@@ -154,3 +175,4 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
