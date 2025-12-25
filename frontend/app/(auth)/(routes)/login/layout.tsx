@@ -3,7 +3,6 @@ import NextTopLoader from "nextjs-toploader";
 
 export const metadata: Metadata = {
     title: 'Sign in',
-    icons: { icon: "/std-match-logo.png" },
 }
 
 const SignInLayout = ({children} : {children: React.ReactNode}) =>{
