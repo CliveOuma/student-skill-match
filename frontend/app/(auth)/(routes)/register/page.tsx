@@ -86,7 +86,7 @@ const RegisterPage = () => {
       }
 
       form.reset();
-      toast.success("Account created successfully! Redirecting to login...");
+      toast.success("Account created successfully!");
       // Email verification disabled - redirect directly to login
       router.push("/login");
 
