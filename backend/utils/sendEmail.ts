@@ -30,8 +30,20 @@ const getOrCreateTransporter = (): nodemailer.Transporter => {
 };
 
 export const sendVerificationEmail = async (email: string, code: string) => {
+  // Validate email configuration first
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    const error = "Email configuration is missing. EMAIL_USER and EMAIL_PASS must be set.";
+    console.error(`[EMAIL] ❌ ${error}`);
+    throw new Error(error);
+  }
+
+  console.log(`[EMAIL] Preparing to send verification email to: ${email}`);
+  console.log(`[EMAIL] Using sender: ${process.env.EMAIL_USER}`);
+  console.log(`[EMAIL] Verification code: ${code}`);
+
   try {
     const emailTransporter = getOrCreateTransporter();
+    console.log(`[EMAIL] Transporter created successfully`);
     
     // Add timeout wrapper
     const emailPromise = emailTransporter.sendMail({
@@ -77,16 +89,36 @@ export const sendVerificationEmail = async (email: string, code: string) => {
       setTimeout(() => reject(new Error("Email sending timeout after 15 seconds")), 15000);
     });
 
-    await Promise.race([emailPromise, timeoutPromise]);
-    console.log(`Verification email sent successfully to ${email}`);
+    const result = await Promise.race([emailPromise, timeoutPromise]);
+    console.log(`[EMAIL] ✅ Verification email sent successfully to ${email}`);
+    console.log(`[EMAIL] Message ID: ${(result as any).messageId || 'N/A'}`);
+    return result;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error(`Error sending verification email to ${email}:`, errorMessage);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    console.error(`[EMAIL] ❌ Error sending verification email to ${email}:`);
+    console.error(`[EMAIL] Error message: ${errorMessage}`);
+    if (errorStack) {
+      console.error(`[EMAIL] Stack trace:`, errorStack);
+    }
+    console.error(`[EMAIL] Full error object:`, error);
     
     // Re-throw with more context
-    if (errorMessage.includes("Email configuration is missing")) {
+    if (errorMessage.includes("Email configuration is missing") || 
+        errorMessage.includes("EMAIL_USER") || 
+        errorMessage.includes("EMAIL_PASS")) {
       throw new Error("Email service is not configured. Please contact support.");
     }
+    
+    if (errorMessage.includes("timeout")) {
+      throw new Error("Email sending timed out. Please try again.");
+    }
+    
+    if (errorMessage.includes("Invalid login") || errorMessage.includes("authentication")) {
+      throw new Error("Email authentication failed. Please check email credentials.");
+    }
+    
     throw new Error(`Failed to send verification email: ${errorMessage}`);
   }
 };

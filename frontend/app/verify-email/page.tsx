@@ -106,6 +106,14 @@ export default function VerifyEmailPage() {
 
       if (axios.isAxiosError(error)) {
         errorMessage = error.response?.data?.message || errorMessage;
+        // Show the actual error message from backend
+        if (error.response?.status === 500) {
+          errorMessage = error.response?.data?.message || "Server error. Please try again.";
+        } else if (error.response?.status === 404) {
+          errorMessage = "User not found. Please register again.";
+        } else if (error.response?.status === 400) {
+          errorMessage = error.response?.data?.message || "Invalid request.";
+        }
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -113,7 +121,7 @@ export default function VerifyEmailPage() {
       console.error("Resend failed:", error);
       setMessage(errorMessage);
       setStatus("error");
-      toast.error("Resend failed.");
+      toast.error(errorMessage);
     } finally {
       setIsResending(false);
     }

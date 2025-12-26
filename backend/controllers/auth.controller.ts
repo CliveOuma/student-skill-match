@@ -119,13 +119,17 @@ export const resendVerificationEmail = async (req: Request, res: Response): Prom
   }
 
   try {
+    console.log(`[RESEND] Attempting to resend verification email to: ${email}`);
+    
     const user = await User.findOne({ email });
     if (!user) {
+      console.log(`[RESEND] User not found: ${email}`);
       res.status(404).json({ message: "User not found" });
       return;
     }
 
     if (user.isVerified) {
+       console.log(`[RESEND] User already verified: ${email}`);
        res.status(400).json({ message: "Email already verified" });
        return;
     }
@@ -133,18 +137,66 @@ export const resendVerificationEmail = async (req: Request, res: Response): Prom
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
     const codeExpires = new Date(Date.now() + 60 * 1000); // 60 seconds (1 minute)
 
+    console.log(`[RESEND] Generating new verification code for: ${email}`);
     user.verificationCode = verificationCode;
     user.verificationCodeExpires = codeExpires;
     user.verificationToken = undefined;
     user.verificationTokenExpires = undefined;
     await user.save();
 
-    await sendVerificationEmail(email, verificationCode);
+    console.log(`[RESEND] User updated, attempting to send email to: ${email}`);
+    
+    // Try to send email, but don't fail the request if email fails
+    try {
+      await sendVerificationEmail(email, verificationCode);
+      console.log(`[RESEND] ✅ Verification email sent successfully to ${email}`);
+    } catch (emailError) {
+      const emailErrorMsg = emailError instanceof Error ? emailError.message : String(emailError);
+      console.error(`[RESEND] ❌ Failed to send email to ${email}:`, emailErrorMsg);
+      
+      // Check if it's a configuration issue
+      if (emailErrorMsg.includes("Email configuration is missing") || 
+          emailErrorMsg.includes("not configured") ||
+          emailErrorMsg.includes("EMAIL_USER") ||
+          emailErrorMsg.includes("EMAIL_PASS")) {
+        res.status(500).json({ 
+          message: "Email service is not configured. Please contact support.",
+          error: "EMAIL_CONFIG_MISSING"
+        });
+        return;
+      }
+      
+      // For other email errors, still return success but log the error
+      // User can try again later
+      console.error(`[RESEND] Email failed but code was generated: ${verificationCode}`);
+    }
 
     res.status(200).json({ message: "Verification code resent successfully." });
   } catch (error) {
-    console.error("Resend error:", error);
-    res.status(500).json({ message: "Something went wrong." });
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    console.error("[RESEND] Error:", {
+      message: errorMessage,
+      stack: errorStack,
+      email: email,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Return more specific error messages
+    if (errorMessage.includes("Email configuration is missing") || 
+        errorMessage.includes("not configured")) {
+      res.status(500).json({ 
+        message: "Email service is not configured. Please contact support.",
+        error: "EMAIL_CONFIG_MISSING"
+      });
+      return;
+    }
+    
+    res.status(500).json({ 
+      message: errorMessage || "Failed to resend verification code. Please try again.",
+      error: process.env.NODE_ENV === "development" ? errorMessage : undefined
+    });
   }
 };
 
