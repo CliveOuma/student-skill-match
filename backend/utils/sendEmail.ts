@@ -7,16 +7,24 @@ const getTransporter = () => {
   }
 
   return nodemailer.createTransport({
-    service: "Gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
-    // Add connection timeout
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-  });
+    // Increase timeouts for Render compatibility
+    connectionTimeout: 60000, // 60 seconds (increased from 30s)
+    greetingTimeout: 60000,   // 60 seconds
+    socketTimeout: 60000,     // 60 seconds
+    pool: {
+      maxConnections: 1,      // Single connection pool for stability
+      maxMessages: Infinity,
+      rateDelta: 1000,
+      rateLimit: 3,           // 3 emails per second
+    },
+  } as any);
 };
 
 // Create transporter lazily (only when needed)
@@ -27,6 +35,37 @@ const getOrCreateTransporter = (): nodemailer.Transporter => {
     transporter = getTransporter();
   }
   return transporter;
+};
+
+// Helper function to send email with retry logic
+const sendEmailWithRetry = async (transporter: nodemailer.Transporter, mailOptions: any, retries = 3): Promise<any> => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`[EMAIL] Send attempt ${attempt}/${retries}`);
+      const result = await transporter.sendMail(mailOptions);
+      console.log(`[EMAIL] ✅ Email sent successfully on attempt ${attempt}`);
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorCode = (error as any)?.code || 'UNKNOWN';
+      
+      console.error(`[EMAIL] Attempt ${attempt} failed (${errorCode}): ${errorMessage}`);
+      
+      if (attempt < retries) {
+        // Wait before retrying (exponential backoff)
+        const waitTime = attempt * 3000; // 3s, 6s, 9s
+        console.log(`[EMAIL] Waiting ${waitTime}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        
+        // Reset transporter connection on retry to avoid connection pool issues
+        transporter = getOrCreateTransporter();
+        console.log(`[EMAIL] Transporter reset for retry ${attempt + 1}`);
+      } else {
+        console.error(`[EMAIL] All ${retries} attempts failed. Last error: ${errorMessage}`);
+        throw error; // Throw on final attempt
+      }
+    }
+  }
 };
 
 export const sendVerificationEmail = async (email: string, code: string) => {
@@ -45,7 +84,7 @@ export const sendVerificationEmail = async (email: string, code: string) => {
     const emailTransporter = getOrCreateTransporter();
     console.log(`[EMAIL] Transporter created successfully`);
     
-    const result = await emailTransporter.sendMail({
+    const mailOptions = {
       from: `"Skill Match Team" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Verification code",
@@ -81,7 +120,9 @@ export const sendVerificationEmail = async (email: string, code: string) => {
           </div>
         </div>
       `,
-    });
+    };
+
+    const result = await sendEmailWithRetry(emailTransporter, mailOptions);
 
     console.log(`[EMAIL] ✅ Verification email sent successfully to ${email}`);
     console.log(`[EMAIL] Message ID: ${(result as any).messageId || 'N/A'}`);
