@@ -54,30 +54,25 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     console.log(`[REGISTER] ✅ User created successfully: ${email} (ID: ${newUser._id})`);
 
-    // Send response immediately
+    // Send response immediately WITHOUT waiting for email
     res.status(201).json({ 
-      message: "User registered successfully. Verification code sent to your email." 
+      message: "User registered successfully. Check your email for the verification code." 
     });
 
-    // Send email asynchronously (don't block response)
-    setImmediate(async () => {
+    // Send email asynchronously in the background (completely non-blocking)
+    // Don't await this - let it run independently
+    (async () => {
       try {
-        console.log(`[REGISTER] Attempting to send verification email to: ${email}`);
-        // Wait for email with timeout (max 10 seconds)
-        await Promise.race([
-          sendVerificationEmail(email, verificationCode),
-          new Promise<never>((_, reject) => {
-            setTimeout(() => reject(new Error("Email timeout")), 10000);
-          })
-        ]);
-        console.log(`[REGISTER] ✅ Verification email sent to ${email}`);
+        console.log(`[REGISTER] Background: Attempting to send verification email to: ${email}`);
+        await sendVerificationEmail(email, verificationCode);
+        console.log(`[REGISTER] Background: ✅ Verification email sent to ${email}`);
       } catch (emailError) {
         // Log error but don't fail registration
         const errorMsg = emailError instanceof Error ? emailError.message : String(emailError);
-        console.error(`[REGISTER] ❌ Failed to send verification email to ${email}:`, errorMsg);
-        // User is still registered, they can use resend functionality
+        console.error(`[REGISTER] Background: ❌ Failed to send verification email to ${email}:`, errorMsg);
+        // User is still registered, they can use resend functionality if email fails
       }
-    });
+    })();
   } catch (error) {
     // Detailed error logging for debugging
     const errorMessage = error instanceof Error ? error.message : "Unknown error";

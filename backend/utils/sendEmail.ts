@@ -45,8 +45,7 @@ export const sendVerificationEmail = async (email: string, code: string) => {
     const emailTransporter = getOrCreateTransporter();
     console.log(`[EMAIL] Transporter created successfully`);
     
-    // Add timeout wrapper
-    const emailPromise = emailTransporter.sendMail({
+    const result = await emailTransporter.sendMail({
       from: `"Skill Match Team" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Verification code",
@@ -84,12 +83,6 @@ export const sendVerificationEmail = async (email: string, code: string) => {
       `,
     });
 
-    // Add timeout (15 seconds max for production reliability)
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error("Email sending timeout after 15 seconds")), 15000);
-    });
-
-    const result = await Promise.race([emailPromise, timeoutPromise]);
     console.log(`[EMAIL] ✅ Verification email sent successfully to ${email}`);
     console.log(`[EMAIL] Message ID: ${(result as any).messageId || 'N/A'}`);
     return result;

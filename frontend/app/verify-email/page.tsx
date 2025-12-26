@@ -226,8 +226,6 @@ export default function VerifyEmailPage() {
                 </svg>
               </div>
             </div>
-            <p className="text-green-600 dark:text-green-400 text-lg font-medium">{message}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Redirecting to login...</p>
           </div>
         )}
 
