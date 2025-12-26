@@ -8,18 +8,42 @@ import { sendVerificationEmail } from "../utils/sendEmail";
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { name, email, password } = req.body;
 
+  // Validate input
+  if (!name || !email || !password) {
+    res.status(400).json({ message: "Name, email, and password are required" });
+    return;
+  }
+
+  // Basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    res.status(400).json({ message: "Invalid email format" });
+    return;
+  }
+
+  // Password validation
+  if (password.length < 6) {
+    res.status(400).json({ message: "Password must be at least 6 characters" });
+    return;
+  }
+
   try {
+    console.log(`[REGISTER] Attempting to register user: ${email}`);
+    
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log(`[REGISTER] Email already exists: ${email}`);
       res.status(400).json({ message: "Email already exists" });
       return;
     }
 
+    console.log(`[REGISTER] Hashing password for: ${email}`);
     const hashedPassword = await hashPassword(password);
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
     const codeExpires = new Date(Date.now() + 60 * 1000); // 60 seconds (1 minute)
 
-    await User.create({
+    console.log(`[REGISTER] Creating user in database: ${email}`);
+    const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
@@ -28,11 +52,61 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       isVerified: false,
     });
 
-    await sendVerificationEmail(email, verificationCode);
-    res.status(201).json({ message: "User registered. Verification code sent." });
+    console.log(`[REGISTER] ✅ User created successfully: ${email} (ID: ${newUser._id})`);
+
+    // Send response immediately
+    res.status(201).json({ 
+      message: "User registered successfully. Verification code sent to your email." 
+    });
+
+    // Send email asynchronously (don't block response)
+    setImmediate(async () => {
+      try {
+        console.log(`[REGISTER] Attempting to send verification email to: ${email}`);
+        // Wait for email with timeout (max 10 seconds)
+        await Promise.race([
+          sendVerificationEmail(email, verificationCode),
+          new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error("Email timeout")), 10000);
+          })
+        ]);
+        console.log(`[REGISTER] ✅ Verification email sent to ${email}`);
+      } catch (emailError) {
+        // Log error but don't fail registration
+        const errorMsg = emailError instanceof Error ? emailError.message : String(emailError);
+        console.error(`[REGISTER] ❌ Failed to send verification email to ${email}:`, errorMsg);
+        // User is still registered, they can use resend functionality
+      }
+    });
   } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    // Detailed error logging for debugging
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : String(error);
+    
+    console.error("Registration error:", {
+      message: errorMessage,
+      stack: errorStack,
+      email: email,
+      timestamp: new Date().toISOString()
+    });
+
+    // Return more specific error messages for debugging (in production, be careful with sensitive info)
+    if (errorMessage.includes("duplicate key") || errorMessage.includes("E11000")) {
+      res.status(400).json({ message: "Email already exists" });
+      return;
+    }
+
+    if (errorMessage.includes("validation")) {
+      res.status(400).json({ message: "Invalid input data" });
+      return;
+    }
+
+    // Generic error for production (don't expose internal details)
+    res.status(500).json({ 
+      message: "Registration failed. Please try again or contact support.",
+      // Only include error details in development
+      ...(process.env.NODE_ENV === "development" && { error: errorMessage })
+    });
   }
 };
 

@@ -15,6 +15,21 @@ dotenv.config();
 const env = process.env.NODE_ENV || "development";
 dotenv.config({ path: `.env.${env}` });
 
+// Validate critical environment variables
+if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  console.warn("⚠️  WARNING: Email configuration (EMAIL_USER, EMAIL_PASS) is missing. Email functionality will not work.");
+}
+
+if (!process.env.MONGO_URI) {
+  console.error("❌ ERROR: MONGO_URI is required but not set.");
+  process.exit(1);
+}
+
+if (!process.env.JWT_SECRET) {
+  console.error("❌ ERROR: JWT_SECRET is required but not set.");
+  process.exit(1);
+}
+
 // Connect to database
 connectDB();
 

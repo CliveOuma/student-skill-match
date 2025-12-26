@@ -10,6 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
     title: "Student Skill Match",
     description: "Skill-based student team formation.",
+    //icons: { icon: "/std-match-logo.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

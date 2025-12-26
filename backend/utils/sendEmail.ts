@@ -1,16 +1,40 @@
 import nodemailer from "nodemailer";
 
-export const sendVerificationEmail = async (email: string, code: string) => {
-  const transporter = nodemailer.createTransport({
+// Validate email configuration
+const getTransporter = () => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    throw new Error("Email configuration is missing. EMAIL_USER and EMAIL_PASS must be set.");
+  }
+
+  return nodemailer.createTransport({
     service: "Gmail",
     auth: {
-      user: process.env.EMAIL_USER!,
-      pass: process.env.EMAIL_PASS!,
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
+    // Add connection timeout
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
+};
 
+// Create transporter lazily (only when needed)
+let transporter: nodemailer.Transporter | null = null;
+
+const getOrCreateTransporter = (): nodemailer.Transporter => {
+  if (!transporter) {
+    transporter = getTransporter();
+  }
+  return transporter;
+};
+
+export const sendVerificationEmail = async (email: string, code: string) => {
   try {
-    await transporter.sendMail({
+    const emailTransporter = getOrCreateTransporter();
+    
+    // Add timeout wrapper
+    const emailPromise = emailTransporter.sendMail({
       from: `"Skill Match Team" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Verification code",
@@ -47,8 +71,22 @@ export const sendVerificationEmail = async (email: string, code: string) => {
         </div>
       `,
     });
+
+    // Add timeout (15 seconds max for production reliability)
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error("Email sending timeout after 15 seconds")), 15000);
+    });
+
+    await Promise.race([emailPromise, timeoutPromise]);
+    console.log(`Verification email sent successfully to ${email}`);
   } catch (error) {
-    console.error("Error sending email:", error);
-    throw new Error("Failed to send verification email");
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error(`Error sending verification email to ${email}:`, errorMessage);
+    
+    // Re-throw with more context
+    if (errorMessage.includes("Email configuration is missing")) {
+      throw new Error("Email service is not configured. Please contact support.");
+    }
+    throw new Error(`Failed to send verification email: ${errorMessage}`);
   }
 };
