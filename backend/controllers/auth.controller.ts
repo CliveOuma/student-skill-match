@@ -39,40 +39,39 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     console.log(`[REGISTER] Hashing password for: ${email}`);
     const hashedPassword = await hashPassword(password);
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
-    const codeExpires = new Date(Date.now() + 60 * 1000); // 60 seconds (1 minute)
+    // const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+    // const codeExpires = new Date(Date.now() + 60 * 1000); // 60 seconds (1 minute)
 
     console.log(`[REGISTER] Creating user in database: ${email}`);
     const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
-      verificationCode,
-      verificationCodeExpires: codeExpires,
-      isVerified: false,
+      // verificationCode,
+      // verificationCodeExpires: codeExpires,
+      isVerified: true, // Email verification disabled - user verified immediately
     });
 
     console.log(`[REGISTER] ✅ User created successfully: ${email} (ID: ${newUser._id})`);
 
-    // Send response immediately WITHOUT waiting for email
+    // Send response immediately - no email verification required
     res.status(201).json({ 
-      message: "User registered successfully. Check your email for the verification code." 
+      message: "Account created successfully. You can now login." 
     });
 
-    // Send email asynchronously in the background (completely non-blocking)
-    // Don't await this - let it run independently
-    (async () => {
-      try {
-        console.log(`[REGISTER] Background: Attempting to send verification email to: ${email}`);
-        await sendVerificationEmail(email, verificationCode);
-        console.log(`[REGISTER] Background: ✅ Verification email sent to ${email}`);
-      } catch (emailError) {
-        // Log error but don't fail registration
-        const errorMsg = emailError instanceof Error ? emailError.message : String(emailError);
-        console.error(`[REGISTER] Background: ❌ Failed to send verification email to ${email}:`, errorMsg);
-        // User is still registered, they can use resend functionality if email fails
-      }
-    })();
+    // Email verification disabled - commented out
+    // (async () => {
+    //   try {
+    //     console.log(`[REGISTER] Background: Attempting to send verification email to: ${email}`);
+    //     await sendVerificationEmail(email, verificationCode);
+    //     console.log(`[REGISTER] Background: ✅ Verification email sent to ${email}`);
+    //   } catch (emailError) {
+    //     // Log error but don't fail registration
+    //     const errorMsg = emailError instanceof Error ? emailError.message : String(emailError);
+    //     console.error(`[REGISTER] Background: ❌ Failed to send verification email to ${email}:`, errorMsg);
+    //     // User is still registered, they can use resend functionality if email fails
+    //   }
+    // })();
   } catch (error) {
     // Detailed error logging for debugging
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
